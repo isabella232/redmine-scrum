@@ -66,6 +66,7 @@ class ScrumController < ApplicationController
       @pbi.author = User.current
       @pbi.sprint = @sprint
       @pbi.tracker_id = params[:issue][:tracker_id]
+      @pbi.assigned_to_id = params[:issue][:assigned_to_id]
       @pbi.subject = params[:issue][:subject]
       @pbi.priority_id = params[:issue][:priority_id]
       @pbi.estimated_hours = params[:issue][:estimated_hours]
@@ -112,6 +113,7 @@ class ScrumController < ApplicationController
       @task.author = User.current
       @task.sprint = @sprint
       @task.tracker_id = params[:issue][:tracker_id]
+      @task.assigned_to_id = params[:issue][:assigned_to_id]
       @task.subject = params[:issue][:subject]
       @task.priority_id = params[:issue][:priority_id]
       @task.estimated_hours = params[:issue][:estimated_hours]

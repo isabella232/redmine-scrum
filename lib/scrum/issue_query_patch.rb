@@ -8,6 +8,8 @@ module Scrum
         self.available_columns << QueryColumn.new(:sprint,
                                                   :sortable => lambda {Sprint.fields_for_order_statement},
                                                   :groupable => true)
+        self.available_columns << QueryColumn.new(:position,
+                                                  :sortable => "#{Issue.table_name}.position")
 
         def initialize_available_filters_with_scrum
           filters = initialize_available_filters_without_scrum
@@ -17,6 +19,8 @@ module Scrum
               add_available_filter "sprint_id",
                                    :type => :list_optional,
                                    :values => sprints.sort.collect{|s| [s.name, s.id.to_s]}
+              add_available_filter "position",
+                                   :type => :integer
               add_associations_custom_fields_filters :sprint
             end
           end

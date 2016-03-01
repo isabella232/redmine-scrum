@@ -14,10 +14,8 @@
     <%= format_date @sprint.end_date %>
   </p>
   <%- if !(@sprint.description.blank?) -%>
-    <p>
-      <label><%= l(:field_description) %>:</label>
-      <%= h @sprint.description %>
-    </p>
+  <hr/>
+  <%= raw(Redmine::WikiFormatting::Textile::Formatter.new(@sprint.description).to_html(true)) %>
   <%- end -%>
 </div>
 

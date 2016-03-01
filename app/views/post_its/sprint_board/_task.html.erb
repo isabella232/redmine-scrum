@@ -7,12 +7,12 @@
         <div class="doers-reviewers-post-its-container">
           <%- task.doers.each do |doer| -%>
             <div class="<%= Issue.doer_post_it_css_class %>">
-              <%= link_to_user doer %>
+              <%= avatar(doer, :size => "14") %> <%= link_to_user doer %>
             </div>
           <%- end -%>
           <%- task.reviewers.each do |reviewer| -%>
             <div class="<%= Issue.reviewer_post_it_css_class %>">
-              <%= link_to_user reviewer %>
+              <%= avatar(reviewer, :size => "14") %> <%= link_to_user reviewer %>
             </div>
           <%- end -%>
         </div>
