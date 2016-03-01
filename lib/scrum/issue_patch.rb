@@ -204,7 +204,7 @@ module Scrum
                   visible_custom_field_values.collect{|value| value.custom_field.id.to_s}.include?(custom_field_id))
         end
 
-        def blocked?
+        def scrum_blocked?
           if has_blocked_field? and
               !((custom_field_id = Scrum::Setting.blocked_custom_field_id).nil?) and
               !((custom_value = self.custom_value_for(custom_field_id)).nil?) and
