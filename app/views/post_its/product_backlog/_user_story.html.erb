@@ -1,0 +1,39 @@
+<%- user_story_id = "user_story_#{user_story.id}" -%>
+
+<li id="<%= user_story_id %>"
+    class="<%= user_story.post_it_css_class(:small_rotate => :true, :small_scale => true, :draggable => true) %>">
+  <table>
+    <tr>
+      <td class="header-1">
+        <%= "#{l(:field_position)}: #{user_story.position}" %>
+        <%= ", #{l(:field_category)}: #{h(user_story.category.name)}" unless user_story.category.nil? %>
+      </td>
+      <td class="header-2">
+        <%= authoring user_story.created_on, user_story.author %>
+        <%= ". #{l(:label_updated_time, time_tag(user_story.updated_on))}".html_safe if user_story.created_on != user_story.updated_on %>
+      </td>
+      <td class="story-points" rowspan="2">
+        <%- if user_story.has_story_points? -%>
+          <%= render :partial => "common/scrum_story_points",
+                     :locals => {:project => project, :user_story => user_story} %>
+        <%- end -%>
+      </td>
+      <td class="story-points-legend" rowspan="2">
+        <%- if user_story.has_story_points? -%>
+          <span title="<%= l(:label_story_point_plural) %>"><%= l(:label_story_point_unit) %></span>
+        <%- end -%>
+      </td>
+    </tr>
+    <tr>
+      <td class="content" colspan="2">
+        <%= link_to_issue(user_story) %>
+      </td>
+    </tr>
+  </table>
+</li>
+
+<%- if User.current.allowed_to?(:edit_product_backlog, project) and user_story.editable? -%>
+  <%= javascript_tag do %>
+    draggableOnTouchScreen("<%= user_story_id %>");
+  <% end %>
+<%- end -%>

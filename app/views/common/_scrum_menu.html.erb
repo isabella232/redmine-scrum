@@ -1,0 +1,5 @@
+<div class="contextual">
+  <%= link_to(l(:label_sprint_board), project_sprints_path(@project), :class => "icon icon-sprint-board") if User.current.allowed_to?(:view_sprint_board, @project) %>
+  &nbsp;&nbsp;&nbsp;
+  <%= link_to(l(:label_product_backlog), project_product_backlog_index_path(@project), :class => "icon icon-product-backlog") if User.current.allowed_to?(:view_product_backlog, @project) %>
+</div>

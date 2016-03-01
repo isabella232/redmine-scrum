@@ -1,0 +1,6 @@
+<tr>
+  <th><%=l(:label_sprint)%>:</th>
+  <td><%= link_to(h(@issue.sprint.name), @issue.sprint.is_product_backlog ? project_product_backlog_index_path(@project) : @issue.sprint) unless @issue.sprint.nil? %></td>
+  <th><%=l(:field_position)%>:</th>
+  <td><%= @issue.position %></td>
+</tr>
