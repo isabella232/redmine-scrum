@@ -1,12 +1,19 @@
+# Copyright © Emilio González Montaña
+# Licence: Attribution & no derivates
+#   * Attribution to the plugin web page URL should be done if you want to use it.
+#     https://redmine.ociotec.com/projects/redmine-plugin-scrum
+#   * No derivates of this plugin (or partial) are allowed.
+# Take a look to licence.txt file at plugin root folder for further details.
+
 class ProductBacklogController < ApplicationController
 
   menu_item :scrum
   model_object Issue
 
   before_filter :find_project_by_project_id,
-                :only => [:index, :sort, :new_pbi, :create_pbi, :burndown]
+                :only => [:index, :sort, :new_pbi, :create_pbi, :burndown, :check_dependencies]
   before_filter :find_product_backlog,
-                :only => [:index, :render_pbi, :sort, :new_pbi, :create_pbi, :burndown]
+                :only => [:index, :render_pbi, :sort, :new_pbi, :create_pbi, :burndown, :check_dependencies]
   before_filter :find_pbis, :only => [:index, :sort]
   before_filter :check_issue_positions, :only => [:index]
   before_filter :authorize
@@ -20,9 +27,22 @@ class ProductBacklogController < ApplicationController
     @pbis.each do |pbi|
       pbi.init_journal(User.current)
       pbi.position = params["pbi"].index(pbi.id.to_s) + 1
+      if Scrum::Setting.check_dependencies_on_pbi_sorting
+        dependencies = get_dependencies(pbi)
+        if dependencies.count > 0
+          raise "PBI ##{pbi.id} depends on other PBIs (#{dependencies.collect{|p| "##{p.id}"}.join(", ")}), it cannot be sorted"
+        end
+      end
       pbi.save!
     end
     render :nothing => true
+  end
+
+  def check_dependencies
+    @pbis_dependencies = get_dependencies
+    respond_to do |format|
+      format.js
+    end
   end
 
   def new_pbi
@@ -120,6 +140,21 @@ private
     else
       raise "Invalid type: #{issue.inspect}"
     end
+  end
+
+  def get_dependencies(pbi = nil)
+    dependencies = []
+    if pbi
+      @product_backlog.pbis(:position_bellow => pbi.position).each do |other_pbi|
+        dependencies << other_pbi if pbi.all_dependent_issues.include?(other_pbi)
+      end
+    else
+      @product_backlog.pbis.each do |a_pbi|
+        pbi_dependencies = get_dependencies(a_pbi)
+        dependencies << {:pbi => a_pbi, :dependencies => pbi_dependencies} if pbi_dependencies.count > 0
+      end
+    end
+    return dependencies
   end
 
 end

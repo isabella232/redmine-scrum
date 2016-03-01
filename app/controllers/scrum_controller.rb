@@ -1,3 +1,10 @@
+# Copyright © Emilio González Montaña
+# Licence: Attribution & no derivates
+#   * Attribution to the plugin web page URL should be done if you want to use it.
+#     https://redmine.ociotec.com/projects/redmine-plugin-scrum
+#   * No derivates of this plugin (or partial) are allowed.
+# Take a look to licence.txt file at plugin root folder for further details.
+
 class ScrumController < ApplicationController
 
   menu_item :scrum
@@ -78,7 +85,7 @@ class ScrumController < ApplicationController
       @pbi.sprint = @sprint
       @pbi.save!
     rescue Exception => @exception
-      log.error("Exception: #{@exception.inspect}")
+      logger.error("Exception: #{@exception.inspect}")
     end
     respond_to do |format|
       format.js
@@ -97,7 +104,7 @@ class ScrumController < ApplicationController
       update_attributes(@pbi, params)
       @pbi.save!
     rescue Exception => @exception
-      log.error("Exception: #{@exception.inspect}")
+      logger.error("Exception: #{@exception.inspect}")
     end
     respond_to do |format|
       format.js
@@ -108,11 +115,9 @@ class ScrumController < ApplicationController
     begin
       raise "The project hasn't defined any Sprint yet" unless @project.last_sprint
       @previous_sprint = @pbi.sprint
-      @pbi.init_journal(User.current)
-      @pbi.sprint = @project.last_sprint
-      @pbi.save!
+      move_issue_to_sprint(@pbi, @project.last_sprint)
     rescue Exception => @exception
-      log.error("Exception: #{@exception.inspect}")
+      logger.error("Exception: #{@exception.inspect}")
     end
     respond_to do |format|
       format.js
@@ -122,11 +127,9 @@ class ScrumController < ApplicationController
   def move_to_product_backlog
     begin
       raise "The project hasn't defined the Product Backlog yet" unless @project.product_backlog
-      @pbi.init_journal(User.current)
-      @pbi.sprint = @project.product_backlog
-      @pbi.save!
+      move_issue_to_sprint(@pbi, @project.product_backlog)
     rescue Exception => @exception
-      log.error("Exception: #{@exception.inspect}")
+      logger.error("Exception: #{@exception.inspect}")
     end
     respond_to do |format|
       format.js
@@ -148,7 +151,7 @@ class ScrumController < ApplicationController
       format.js
     end
   rescue Exception => e
-    log.error("Exception: #{e.inspect}")
+    logger.error("Exception: #{e.inspect}")
     render_404
   end
 
@@ -185,7 +188,7 @@ class ScrumController < ApplicationController
       @issue.save!
       @issue.pending_effort = params[:issue][:pending_effort]
     rescue Exception => @exception
-      log.error("Exception: #{@exception.inspect}")
+      logger.error("Exception: #{@exception.inspect}")
     end
     respond_to do |format|
       format.js
@@ -256,7 +259,7 @@ private
     @sprint = Sprint.find(params[:sprint_id])
     @project = @sprint.project
   rescue
-    log.error("Sprint #{params[:sprint_id]} not found")
+    logger.error("Sprint #{params[:sprint_id]} not found")
     render_404
   end
 
@@ -265,7 +268,7 @@ private
     @sprint = @pbi.sprint
     @project = @sprint.project
   rescue
-    log.error("PBI #{params[:pbi_id]} not found")
+    logger.error("PBI #{params[:pbi_id]} not found")
     render_404
   end
 
@@ -279,18 +282,29 @@ private
   end
 
   def update_attributes(issue, params)
-    issue.status_id = params[:issue][:status_id]
+    issue.status_id = params[:issue][:status_id] unless params[:issue][:status_id].nil?
     raise "New status is not allowed" unless issue.new_statuses_allowed_to.include?(issue.status)
-    issue.assigned_to_id = params[:issue][:assigned_to_id]
-    issue.subject = params[:issue][:subject]
-    issue.priority_id = params[:issue][:priority_id]
-    issue.estimated_hours = params[:issue][:estimated_hours]
-    issue.description = params[:issue][:description]
-    issue.category_id = params[:issue][:category_id] if issue.safe_attribute?(:category_id)
-    issue.fixed_version_id = params[:issue][:fixed_version_id] if issue.safe_attribute?(:fixed_version_id)
-    issue.start_date = params[:issue][:start_date] if issue.safe_attribute?(:start_date)
-    issue.due_date = params[:issue][:due_date] if issue.safe_attribute?(:due_date)
+    issue.assigned_to_id = params[:issue][:assigned_to_id] unless params[:issue][:assigned_to_id].nil?
+    issue.subject = params[:issue][:subject] unless params[:issue][:subject].nil?
+    issue.priority_id = params[:issue][:priority_id] unless params[:issue][:priority_id].nil?
+    issue.estimated_hours = params[:issue][:estimated_hours] unless params[:issue][:estimated_hours].nil?
+    issue.description = params[:issue][:description] unless params[:issue][:description].nil?
+    issue.category_id = params[:issue][:category_id] if issue.safe_attribute?(:category_id) and (!(params[:issue][:category_id].nil?))
+    issue.fixed_version_id = params[:issue][:fixed_version_id] if issue.safe_attribute?(:fixed_version_id) and (!(params[:issue][:fixed_version_id].nil?))
+    issue.start_date = params[:issue][:start_date] if issue.safe_attribute?(:start_date) and (!(params[:issue][:start_date].nil?))
+    issue.due_date = params[:issue][:due_date] if issue.safe_attribute?(:due_date) and (!(params[:issue][:due_date].nil?))
     issue.custom_field_values = params[:issue][:custom_field_values] unless params[:issue][:custom_field_values].nil?
+  end
+
+  def move_issue_to_sprint(issue, sprint)
+    issue.init_journal(User.current)
+    issue.sprint = sprint
+    issue.save!
+    issue.children.each do |child|
+      unless child.closed?
+        move_issue_to_sprint(child, sprint)
+      end
+    end
   end
 
 end

@@ -1,6 +1,13 @@
 # Plugin's routes
 # See: http://guides.rubyonrails.org/routing.html
 
+# Copyright © Emilio González Montaña
+# Licence: Attribution & no derivates
+#   * Attribution to the plugin web page URL should be done if you want to use it.
+#     https://redmine.ociotec.com/projects/redmine-plugin-scrum
+#   * No derivates of this plugin (or partial) are allowed.
+# Take a look to licence.txt file at plugin root folder for further details.
+
 resources :projects do
   resources :sprints, :shallow => true do
     member do
@@ -23,6 +30,7 @@ resources :projects do
       post :create_pbi
       get :burndown
       get :burndown_graph
+      get :check_dependencies
     end
   end
   get "product_backlog/new_pbi/:tracker_id",

@@ -415,3 +415,8 @@ table.sprint-pbi input, table.sprint-task input {
   margin-bottom: 0.5em;
   font-size: 0.9em;
 }
+
+#licenseIframe {
+  width: 820px;
+  height: 580px;
+}

@@ -1,3 +1,10 @@
+# Copyright © Emilio González Montaña
+# Licence: Attribution & no derivates
+#   * Attribution to the plugin web page URL should be done if you want to use it.
+#     https://redmine.ociotec.com/projects/redmine-plugin-scrum
+#   * No derivates of this plugin (or partial) are allowed.
+# Take a look to licence.txt file at plugin root folder for further details.
+
 class Sprint < ActiveRecord::Base
 
   belongs_to :user
@@ -24,10 +31,22 @@ class Sprint < ActiveRecord::Base
     self.is_product_backlog
   end
 
-  def pbis
-    issues.all(:conditions => {:tracker_id => Scrum::Setting.pbi_tracker_ids,
-                               :status_id => Scrum::Setting.pbi_status_ids},
-               :order => "position ASC").select{|issue| issue.visible?}
+  def pbis(options = {})
+    conditions = {:tracker_id => Scrum::Setting.pbi_tracker_ids,
+                  :status_id => Scrum::Setting.pbi_status_ids}
+    order = "position ASC"
+    if options[:position_bellow]
+      first_issue = issues.first(:conditions => conditions, :order => order)
+      first_position = first_issue ? first_issue.position : (options[:position_bellow] - 1)
+      last_position = options[:position_bellow] - 1
+      if last_position < first_position
+        temp = last_position
+        last_position = first_position
+        first_position = temp
+      end
+      conditions[:position] = first_position..last_position
+    end
+    issues.all(:conditions => conditions, :order => order).select{|issue| issue.visible?}
   end
 
   def story_points

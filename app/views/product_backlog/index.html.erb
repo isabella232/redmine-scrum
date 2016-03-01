@@ -2,15 +2,8 @@
 
 <h2><%= l(:label_product_backlog) %></h2>
 
-<%- if User.current.allowed_to?(:add_issues, @project) -%>
-  <div>
-    <%- Tracker.pbi_trackers.each do |tracker| -%>
-      <%= link_to tracker.name, new_pbi_path(@project.product_backlog, tracker, :top => true),
-                  :remote => true, :method => "GET", :class => "icon icon-add" %>
-    <%- end -%>
-  </div>
-  <br />
-<%- end -%>
+<%= render :partial => "product_backlog/actions",
+           :locals => {:project => @project, :top => true} %>
 
 <ul id="pbis" class="pbis">
   <%- @pbis.each do |pbi| -%>
@@ -19,14 +12,8 @@
   <%- end -%>
 </ul>
 
-<%- if User.current.allowed_to?(:add_issues, @project) -%>
-  <div>
-    <%- Tracker.pbi_trackers.each do |tracker| -%>
-      <%= link_to tracker.name, new_pbi_path(@project.product_backlog, tracker),
-                  :remote => true, :method => "GET", :class => "icon icon-add" %>
-    <%- end -%>
-  </div>
-<%- end -%>
+<%= render :partial => "product_backlog/actions",
+           :locals => {:project => @project, :top => false} %>
 
 <%- if User.current.allowed_to?(:edit_product_backlog, @project) -%>
   <%= render :partial => "post_its/product_backlog/pbis",

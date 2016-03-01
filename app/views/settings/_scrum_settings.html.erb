@@ -1,3 +1,6 @@
+<%= render :partial => "license" %>
+<br/>
+
 <fieldset>
   <legend><%= l(:label_settings) %></legend>
   <p>
@@ -129,6 +132,16 @@
     <%= hidden_field_tag("settings[render_updated_on_pbi]", 0) %>
     <%= check_box_tag("settings[render_updated_on_pbi]", 1,
                       Scrum::Setting.render_updated_on_pbi) %>
+  </p>
+</fieldset>
+
+<fieldset>
+  <legend><%= l(:label_product_backlog) %></legend>
+  <p>
+    <label><%= l(:label_setting_check_dependencies_on_pbi_sorting) %>:</label>
+    <%= hidden_field_tag("settings[check_dependencies_on_pbi_sorting]", 0) %>
+    <%= check_box_tag("settings[check_dependencies_on_pbi_sorting]", 1,
+                      Scrum::Setting.check_dependencies_on_pbi_sorting) %>
   </p>
 </fieldset>
 

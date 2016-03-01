@@ -1,5 +1,12 @@
 # encoding: UTF-8
 
+# Copyright © Emilio González Montaña
+# Licence: Attribution & no derivates
+#   * Attribution to the plugin web page URL should be done if you want to use it.
+#     https://redmine.ociotec.com/projects/redmine-plugin-scrum
+#   * No derivates of this plugin (or partial) are allowed.
+# Take a look to licence.txt file at plugin root folder for further details.
+
 # This plugin should be reloaded in development mode.
 if (Rails.env == "development")
   ActiveSupport::Dependencies.autoload_once_paths.reject!{|x| x =~ /^#{Regexp.escape(File.dirname(__FILE__))}/}
@@ -22,7 +29,7 @@ Redmine::Plugin.register :scrum do
   name              "Scrum Redmine plugin"
   author            "Emilio González Montaña"
   description       "This plugin for Redmine allows to follow Scrum methodology with Redmine projects"
-  version           "0.8.0"
+  version           "0.9.0"
   url               "https://redmine.ociotec.com/projects/redmine-plugin-scrum"
   author_url        "http://ociotec.com"
   requires_redmine  :version_or_higher => "2.3.0"
@@ -44,7 +51,7 @@ Redmine::Plugin.register :scrum do
     permission      :view_sprint_stats, {}
     permission      :view_sprint_stats_by_member, {}
     permission      :view_product_backlog,
-                    {:product_backlog => [:index]}
+                    {:product_backlog => [:index, :check_dependencies]}
     permission      :edit_product_backlog,
                     {:product_backlog => [:sort, :new_pbi, :create_pbi],
                      :scrum => [:edit_pbi, :update_pbi, :move_to_last_sprint, :move_to_product_backlog]},
@@ -73,6 +80,7 @@ Redmine::Plugin.register :scrum do
                                  :render_version_on_pbi => "1",
                                  :render_author_on_pbi => "1",
                                  :render_updated_on_pbi => "0",
+                                 :check_dependencies_on_pbi_sorting => "0",
                                  :product_burndown_sprints => "4"},
                     :partial => "settings/scrum_settings"
 end

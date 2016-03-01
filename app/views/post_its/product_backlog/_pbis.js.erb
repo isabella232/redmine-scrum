@@ -12,7 +12,8 @@
 						data: $("#pbis").sortable("serialize"),
 						dataType: "script",
 						error: function() {
-							alert("<%= l(:error_changing_task_status) %>");
+							alert("<%= l(:error_changing_pbi_order) %>");
+							location.reload(true);
 						},
 						complete: function() {
 							if ($.isFunction($.fn.hideOnLoad)) {
