@@ -7,24 +7,19 @@
     <%- custom_fields = CustomField.find_all_by_type_and_field_format("IssueCustomField", ["int", "float", "string", "list"])
         custom_fields = custom_fields.collect{|c| [c.name, c.id]}
         options = options_for_select(custom_fields, @settings["story_points_custom_field"]) -%>
-    <%= select_tag "settings[story_points_custom_field]", options, :include_blank => true %>
-  </p>
-  <p>
-    <label><%= l(:label_setting_pending_effort_custom_field) %>:</label>
-    <%- options = options_for_select(custom_fields, @settings["pending_effort_custom_field"]) -%>
-    <%= select_tag "settings[pending_effort_custom_field]", options, :include_blank => true %>
+    <%= select_tag "settings[story_points_custom_field]", options, include_blank: true %>
   </p>
   <p>
     <label><%= l(:label_setting_task_statuses) %>:</label>
     <%- statuses = IssueStatus.all.collect{|s| [s.name, s.id]} -%>
     <%- options = options_for_select(statuses, @settings["task_statuses"]) -%>
-    <%= select_tag "settings[task_statuses]", options, :multiple => true %>
+    <%= select_tag "settings[task_statuses]", options, multiple: true %>
   </p>
   <p>
     <label><%= l(:label_setting_verification_activities) %>:</label>
-    <%- activities = Enumeration.all(:conditions => {:type => "TimeEntryActivity"}).collect{|s| [s.name, s.id]} -%>
+    <%- activities = Enumeration.all(conditions: {type: "TimeEntryActivity"}).collect{|s| [s.name, s.id]} -%>
     <%- options = options_for_select(activities, @settings["verification_activities"]) -%>
-    <%= select_tag "settings[verification_activities]", options, :multiple => true %>
+    <%= select_tag "settings[verification_activities]", options, multiple: true %>
   </p>
 </fieldset>
 
@@ -32,14 +27,14 @@
   <legend><%= l(:label_tracker_plural) %></legend>
   <%- trackers = Tracker.all.collect{|t| [t.name, t.id]} -%>
   <p>
-    <label><%= l(:lable_product_backlog_item_plural) %>:</label>
-    <%- options = options_for_select(trackers, @settings["user_story_trakers"]) -%>
-    <%= select_tag "settings[user_story_trakers]", options, :multiple => true %>
+    <label><%= l(:label_pbi_plural) %>:</label>
+    <%- options = options_for_select(trackers, @settings["pbi_trakers"]) -%>
+    <%= select_tag "settings[pbi_trakers]", options, multiple: true %>
   </p>
   <p>
     <label><%= l(:label_task_plural) %>:</label>
     <%- options = options_for_select(trackers, @settings["task_trakers"]) -%>
-    <%= select_tag "settings[task_trakers]", options, :multiple => true %>
+    <%= select_tag "settings[task_trakers]", options, multiple: true %>
   </p>
 </fieldset>
 

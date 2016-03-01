@@ -1,54 +1,37 @@
-<%= render :partial => "common/scrum_menu" %>
+<%= render partial: "common/scrum_menu" %>
 
 <h2>
   <%= l(:label_sprint_board) %>
 </h2>
 
-<%= render :partial => "post_its/sprint_board/head",
-           :locals => {:project => @project,
-                       :sprint => @sprint} %>
+<%= render partial: "post_its/sprint_board/head",
+           locals: {project: @project, sprint: @sprint, path: method(:sprint_path)} %>
 
-<%- if @sprint.user_stories.empty? -%>
+<%- if @sprint.pbis.empty? -%>
   <p class="nodata"><%= l(:label_no_data) %></p>
 <%- else -%>
-  <table class="sprint-board">
+  <table id="sprint_board" class="sprint-board">
     <tr class="sprint-board">
-      <th class="sprint-board"><%= l(:lable_product_backlog_item_plural) %></th>
+      <th class="sprint-board"><%= l(:label_pbi_plural) %></th>
       <%- task_statuses = IssueStatus.task_statuses
           task_statuses.each do |status| -%>
         <th class="sprint-board"><%= status.name %></th>
       <%- end -%>
     </tr>
-    <%- @sprint.user_stories.each do |user_story| -%>
-      <tr class="sprint-board">
-        <td class="sprint-board">
-          <%= render :partial => "post_its/sprint_board/user_story",
-                     :locals => {:project => @project, :user_story => user_story} %>
-        </td>
-        <%- tasks = user_story.tasks_by_status_id
-            task_statuses.each do |status| -%>
-          <%- user_story_status_id = "user_story_#{user_story.id}_status_#{status.id}"
-              other_user_story_status_ids = task_statuses.select{|other| other != status}.collect{
-                |other| "user_story_#{user_story.id}_status_#{other.id}"
-              } -%>
-          <td id="<%= user_story_status_id %>" class="sprint-board">
-            <%- tasks[status.id].each do |task| -%>
-              <%= render :partial => "post_its/sprint_board/task",
-                         :locals => {:project => @project,
-                                     :task => task,
-                                     :user_story_status_id => user_story_status_id,
-                                     :other_user_story_status_ids => other_user_story_status_ids} %>
-            <%- end -%>
-          </td>
-          <%= render :partial => "post_its/sprint_board/user_story_status",
-                     :formats => [:js],
-                     :locals => {:project => @project,
-                                 :user_story_status_id => user_story_status_id,
-                                 :status => status} %>
-        <%- end -%>
-      </tr>
+    <%- @sprint.pbis.each do |pbi| -%>
+      <%= render partial: "post_its/sprint_board/pbi_row",
+                 locals: {project: @project, pbi: pbi, task_statuses: task_statuses} %>
     <%- end -%>
   </table>
 <%- end -%>
 
-<%= render :partial => "common/scrum_footer" %>
+<%- if User.current.allowed_to?(:add_issues, @project) -%>
+  <div>
+    <%- Tracker.pbi_trackers.each do |tracker| -%>
+      <%= link_to tracker.name, new_pbi_path(@sprint, tracker), remote: true,
+                  method: "GET", class: "icon icon-add" %>
+    <%- end -%>
+  </div>
+<%- end -%>
+
+<%= render partial: "common/scrum_footer" %>

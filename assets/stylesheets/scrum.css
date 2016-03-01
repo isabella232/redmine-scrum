@@ -1,3 +1,7 @@
+.icon-burndown {
+	background-image: url(../images/icon-burndown-16.png);
+}
+
 .icon-sprint-board {
 	background-image: url(../images/icon-sprint-board-16.png);
 }
@@ -152,55 +156,55 @@
 	cursor: ns-resize;
 }
 
-ul.user-stories {
+ul.pbis {
 	padding: 0px;
 	width: 95%;
 	margin: 0px auto 0px auto;
 }
 
-ul.user-stories li {
+ul.pbis li {
 	list-style: none;
 	padding: 3px 20px 3px 20px;
 	margin-bottom: 10px;
 }
 
-ul.user-stories li table {
+ul.pbis li table {
 	width: 100%;
 }
 
-ul.user-stories li table tr {
+ul.pbis li table tr {
 	vertical-align: middle;
 }
 
-ul.user-stories li table tr td.header-1, ul.user-stories li table tr td.header-2 {
+ul.pbis li table tr td.header-1, ul.pbis li table tr td.header-2 {
 	font-size: 0.8em;
 	font-style: italic;
 	color: grey;
 	width: 50%;
 }
 
-ul.user-stories li table tr td.header-1 {
+ul.pbis li table tr td.header-1 {
 	text-align: left;
 }
 
-ul.user-stories li table tr td.header-2 {
+ul.pbis li table tr td.header-2 {
 	text-align: right;
 }
 
-ul.user-stories li table tr td.story-points input {
+ul.pbis li table tr td.story-points input {
 	font-size: 2em;
 	font-style: bold;
 	text-align: right;
 	min-width: 50px;
 }
 
-ul.user-stories li table tr td.story-points-legend {
+ul.pbis li table tr td.story-points-legend {
 	font-style: italic;
 	color: darkgrey;
 	min-width: 20px;
 }
 
-ul.user-stories li table tr td.content {
+ul.pbis li table tr td.content {
 	width: 100%;
 	font-size: 1.2em;
 }
@@ -208,8 +212,7 @@ ul.user-stories li table tr td.content {
 table.sprint-board {
 	border-collapse: collapse;
 	overflow: auto;
-	margin-left: auto;
-	margin-right: auto;
+	margin: 0px auto 10px auto;
 }
 
 table.sprint-board tr.sprint-board {
@@ -226,13 +229,13 @@ table.sprint-board tr.sprint-board td.sprint-board {
 	padding-top: 10px;
 }
 
-table.sprint-user-story, table.sprint-task {
+table.sprint-pbi, table.sprint-task {
 	height: 100px;
 	margin-right: 10px;
 	margin-bottom: 10px;
 }
 
-table.sprint-user-story {
+table.sprint-pbi {
 	width: 200px;
 }
 
@@ -241,33 +244,33 @@ table.sprint-task {
 	float: left;
 }
 
-table.sprint-user-story tr, table.sprint-task tr {
+table.sprint-pbi tr, table.sprint-task tr {
 	vertical-align: top;
 }
 
-table.sprint-user-story tr td.content, table.sprint-task tr td.content {
+table.sprint-pbi tr td.content, table.sprint-task tr td.content {
 	height: 100%;
 	position: relative;
 }
 
-table.sprint-user-story tr td.estimation, table.sprint-task tr td.estimation,
-table.sprint-user-story tr td.spent, table.sprint-task tr td.spent,
-table.sprint-user-story tr td.pending, table.sprint-task tr td.pending {
+table.sprint-pbi tr td.estimation, table.sprint-task tr td.estimation,
+table.sprint-pbi tr td.spent, table.sprint-task tr td.spent,
+table.sprint-pbi tr td.pending, table.sprint-task tr td.pending {
 	width: 33%;
 }
 
-table.sprint-user-story tr td.estimation, table.sprint-task tr td.estimation {
+table.sprint-pbi tr td.estimation, table.sprint-task tr td.estimation {
 }
 
-table.sprint-user-story tr td.spent, table.sprint-task tr td.spent {
+table.sprint-pbi tr td.spent, table.sprint-task tr td.spent {
 	text-align: center;
 }
 
-table.sprint-user-story tr td.pending, table.sprint-task tr td.pending {
+table.sprint-pbi tr td.pending, table.sprint-task tr td.pending {
 	text-align: right;
 }
 
-table.sprint-user-story input, table.sprint-task input {
+table.sprint-pbi input, table.sprint-task input {
 	text-align: right;
 	width: 30px;
 	margin-top: -4px;
@@ -335,4 +338,21 @@ table.sprint-user-story input, table.sprint-task input {
 
 .scrum-custom-menu p {
 	margin-left: 100px;
+}
+
+.rotate {
+	-webkit-transform: rotate(-90deg);
+	-moz-transform: rotate(-90deg);
+	-ms-transform: rotate(-90deg);
+	-o-transform: rotate(-90deg);
+	filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+}
+
+.burndown {
+	width: 100%;
+	text-align: center;
+}
+
+.scrum-dialog {
+	display: none;
 }

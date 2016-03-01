@@ -3,6 +3,7 @@ class Sprint < ActiveRecord::Base
   belongs_to :user
   belongs_to :project
   has_many :issues, :dependent => :destroy
+  has_many :efforts, :class_name => "SprintEffort", :dependent => :destroy
 
   validates_presence_of :name
   validates_uniqueness_of :name, :scope => [:project_id]
@@ -20,13 +21,13 @@ class Sprint < ActiveRecord::Base
   end
 
   def is_product_backlog?
-    project and project.product_backlog == self
+    self.is_product_backlog
   end
 
-  def user_stories
-    user_stories_trackers = Setting.plugin_scrum[:user_story_trakers].collect{|tracker| tracker.to_i}
-    issues.all(:conditions => {:tracker_id => user_stories_trackers},
-               :order => "position ASC").select{|issue| issue.visible?}
+  def pbis
+    pbi_trackers = (Setting.plugin_scrum[:pbi_trakers] || []).collect{|tracker| tracker.to_i}
+    issues.all(conditions: {tracker_id: pbi_trackers},
+               order: "position ASC").select{|issue| issue.visible?}
   end
 
   def self.fields_for_order_statement(table = nil)

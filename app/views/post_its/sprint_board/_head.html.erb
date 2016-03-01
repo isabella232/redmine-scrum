@@ -3,9 +3,10 @@
   </div>
   <p>
     <label><%= l(:label_sprint) %>:</label>
-    <%- options = project.sprints.collect{|sprint| [sprint.name, sprint_path(sprint)]}
-        options = options_for_select(options, sprint_path(sprint)) -%>
-    <%= select_tag "selected_sprint_id", options, :onchange => "if (this.value != '') { window.location = this.value; }" %>
+    <%- options = project.sprints.collect{|sprint| [sprint.name, path.call(sprint)]}
+        options = options_for_select(options, path.call(sprint)) -%>
+    <%= select_tag "selected_sprint_id", options,
+                   onchange: "if (this.value != '') { window.location = this.value; }" %>
   </p>
   <p>
     <label><%= l(:field_start_date) %>:</label>

@@ -1,0 +1,21 @@
+<%= render partial: "common/scrum_menu" %>
+
+<h2>
+  <%= l(:label_burndown_chart) %>
+</h2>
+
+<%= render partial: "post_its/sprint_board/head",
+           locals: {project: @project,
+                    sprint: @sprint,
+                    path: method(:burndown_sprint_path)} %>
+
+<div class="burndown">
+  <%= tag(:img,
+          type: "image/png",
+          src: url_for(controller: :sprints,
+                       action: :burndown_graph,
+                       id: @sprint,
+                       format: :png)) %>
+</div>
+
+<%= render partial: "common/scrum_footer" %>

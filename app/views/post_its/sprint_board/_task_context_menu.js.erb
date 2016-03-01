@@ -23,8 +23,8 @@
 				url: "<%= change_assigned_to_path(task) %>",
 				type: "POST",
 				data: {value: $(this).val(),
-							 user_story_status_id: "<%= user_story_status_id %>",
-							 other_user_story_status_ids: "<%= other_user_story_status_ids.join(",") %>",
+							 pbi_status_id: "<%= pbi_status_id %>",
+							 other_pbi_status_ids: "<%= other_pbi_status_ids.join(",") %>",
 							 task_id: "<%= task_id %>"},
 				error: function() {
 					alert("<%= l(:error_changing_task_assigned_to) %>");

@@ -22,6 +22,20 @@ module Scrum
         end
         alias_method_chain :initialize_available_filters, :scrum
 
+        def issues_with_scrum(options = {})
+          options[:include] ||= {}
+          options[:include] << :sprint
+          issues_without_scrum(options)
+        end
+        alias_method_chain :issues, :scrum
+
+        def issue_ids_with_scrum(options = {})
+          options[:include] ||= {}
+          options[:include] << :sprint
+          issue_ids_without_scrum(options)
+        end
+        alias_method_chain :issue_ids, :scrum
+
       end
     end
   end

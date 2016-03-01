@@ -5,9 +5,30 @@ module Scrum
     def self.included(base)
       base.class_eval do
 
-        def is_user_story?
-          user_stories_trackers = Setting.plugin_scrum[:user_story_trakers].collect{|tracker| tracker.to_i}
-          user_stories_trackers.include?(id)
+        def self.pbi_trackers_ids
+          (Setting.plugin_scrum[:pbi_trakers] || []).collect{|tracker| tracker.to_i}
+        end
+
+        def self.pbi_trackers
+          Tracker.all(conditions: {id: pbi_trackers_ids})
+        end
+
+        def is_pbi?
+          pbi_trackers = (Setting.plugin_scrum[:pbi_trakers] || []).collect{|tracker| tracker.to_i}
+          pbi_trackers.include?(id)
+        end
+
+        def self.task_trackers_ids
+          (Setting.plugin_scrum[:task_trakers] || []).collect{|tracker| tracker.to_i}
+        end
+
+        def self.task_trackers
+          Tracker.all(conditions: {id: task_trackers_ids})
+        end
+
+        def is_task?
+          tasks_trackers = (Setting.plugin_scrum[:task_trakers] || []).collect{|tracker| tracker.to_i}
+          tasks_trackers.include?(id)
         end
 
         def post_it_css_class
