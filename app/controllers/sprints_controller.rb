@@ -16,7 +16,11 @@ class SprintsController < ApplicationController
   helper :timelog
 
   def index
-    redirect_to sprint_path(@project.last_sprint)
+    if @project.last_sprint
+      redirect_to sprint_path(@project.last_sprint)
+    else
+      render_error l(:error_no_sprints)
+    end
   rescue
     render_404
   end
@@ -119,7 +123,11 @@ class SprintsController < ApplicationController
   end
 
   def burndown_index
-    redirect_to burndown_sprint_path(@project.last_sprint)
+    if @project.last_sprint
+      redirect_to burndown_sprint_path(@project.last_sprint)
+    else
+      render_error l(:error_no_sprints)
+    end
   rescue
     render_404
   end

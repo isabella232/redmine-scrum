@@ -94,7 +94,9 @@ private
 
   def find_product_backlog
     @product_backlog = @project.product_backlog
-    raise if @product_backlog.nil?
+    if @product_backlog.nil?
+      render_error l(:error_no_product_backlog)
+    end
   rescue
     render_404
   end

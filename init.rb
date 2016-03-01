@@ -22,7 +22,7 @@ Redmine::Plugin.register :scrum do
   name              "Scrum Redmine plugin"
   author            "Emilio González Montaña"
   description       "This plugin for Redmine allows to follow Scrum methodology with Redmine projects"
-  version           "0.6.0"
+  version           "0.6.1"
   url               "https://redmine.ociotec.com/projects/redmine-plugin-scrum"
   author_url        "http://ociotec.com"
   requires_redmine  :version_or_higher => "2.3.0"
