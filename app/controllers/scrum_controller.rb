@@ -59,10 +59,15 @@ class ScrumController < ApplicationController
   def create_pbi
     begin
       @continue = !(params[:create_and_continue].nil?)
-      @pbi = Issue.new(params[:issue])
+      @pbi = Issue.new
       @pbi.project = @project
       @pbi.author = User.current
       @pbi.sprint = @sprint
+      @pbi.tracker_id = params[:issue][:tracker_id]
+      @pbi.subject = params[:issue][:subject]
+      @pbi.category_id = params[:issue][:category_id]
+      @pbi.description = params[:issue][:description]
+      @pbi.custom_field_values = params[:issue][:custom_field_values] unless params[:issue][:custom_field_values].nil?
       @pbi.save!
       @pbi.story_points = params[:issue][:story_points]
     rescue Exception => @exception
@@ -73,21 +78,6 @@ class ScrumController < ApplicationController
   end
 
 private
-
-  def change_custom_field(setting, issue, value)
-    status = 503
-    begin
-      if !((custom_field_id = Setting.plugin_scrum[setting]).nil?) and
-         !((custom_field = CustomField.find(custom_field_id)).nil?) and
-         custom_field.validate_field_value(value).empty?
-        issue.custom_field_values = {custom_field_id => value}
-        issue.save_custom_field_values
-        status = 200
-      end
-    rescue Exception => @exception
-    end
-    render nothing: true, status: status
-  end
 
   def render_task(project, task, params)
     render partial: "post_its/sprint_board/task",

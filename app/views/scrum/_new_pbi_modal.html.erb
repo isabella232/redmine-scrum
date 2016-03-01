@@ -30,6 +30,12 @@
       </p>
     <% end %>
 
+    <%- @pbi.editable_custom_field_values.each do |value| -%>
+      <%- if value.custom_field.is_required -%>
+        <p><%= custom_field_tag_with_label :issue, value, required: true %></p>
+      <%- end -%>
+    <%- end -%>
+
     <%- if @pbi.safe_attribute?(:description) -%>
       <p>
         <%= f.label_for_field :description, required: @pbi.required_attribute?(:description) %>

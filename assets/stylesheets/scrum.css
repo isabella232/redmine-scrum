@@ -12,12 +12,14 @@
 
 .post-it {
 	overflow: hidden;
-	-moz-box-shadow: 4px 4px 7px rgba(0, 0, 0, 0.7);
-	-webkit-box-shadow: 4px 4px 7px rgba(0, 0, 0, 0.7);
 	box-shadow: 4px 4px 7px rgba(0, 0, 0, 0.7);
-	-moz-transition:-moz-transform 0.15s linear;  
-	-o-transition:-o-transform 0.15s linear;  
-	-webkit-transition:-webkit-transform 0.15s linear;
+	-moz-box-shadow: 4px 4px 7px rgba(0, 0, 0, 0.7);
+	-o-box-shadow: 4px 4px 7px rgba(0, 0, 0, 0.7);
+	-webkit-box-shadow: 4px 4px 7px rgba(0, 0, 0, 0.7);
+	-transition: -transform 0.15s linear;  
+	-moz-transition: -moz-transform 0.15s linear;  
+	-o-transition: -o-transform 0.15s linear;  
+	-webkit-transition: -webkit-transform 0.15s linear;
 }
 
 .post-it-scale:hover, .post-it-scale:hover {
@@ -25,15 +27,17 @@
 }
 
 .post-it-scale:hover {
-	-webkit-transform: scale(1.14);
+	-transform: scale(1.14);
 	-moz-transform: scale(1.14);
 	-o-transform: scale(1.14);
+	-webkit-transform: scale(1.14);
 }
 
 .post-it-small-scale:hover {
-	-webkit-transform: scale(1.02, 1.14);
+	-transform: scale(1.02, 1.14);
 	-moz-transform: scale(1.02, 1.14);
 	-o-transform: scale(1.02, 1.14);
+	-webkit-transform: scale(1.02, 1.14);
 }
 
 .settings-post-it {
@@ -248,7 +252,8 @@ table.sprint-pbi tr, table.sprint-task tr {
 	vertical-align: top;
 }
 
-table.sprint-pbi tr td.content, table.sprint-task tr td.content {
+table.sprint-pbi tr td.content, table.sprint-task tr td.content,
+table.sprint-pbi tr td.content div.content, table.sprint-task tr td.content div.content {
 	height: 100%;
 	position: relative;
 }
@@ -285,14 +290,17 @@ table.sprint-pbi input, table.sprint-task input {
 
 .doers-reviewers-post-its-container {
 	position: absolute;
-	margin-left: 30px;
-	margin-right: 5px;
+	margin-left: 50px;
+	margin-right: 0px;
 	right: 0px;
 	bottom: 0px;
+	overflow: visible;
 }
 
 .doer-post-it, .reviewer-post-it {
 	height: 1.3em;
+	font-size: 0.8em;
+	font-style: italic;
 	margin-top: 2px;
 	text-align: center;
 }

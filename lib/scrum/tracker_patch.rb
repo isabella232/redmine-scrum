@@ -6,7 +6,7 @@ module Scrum
       base.class_eval do
 
         def self.pbi_trackers_ids
-          (Setting.plugin_scrum[:pbi_trakers] || []).collect{|tracker| tracker.to_i}
+          Scrum::Setting.pbi_tracker_ids
         end
 
         def self.pbi_trackers
@@ -14,12 +14,11 @@ module Scrum
         end
 
         def is_pbi?
-          pbi_trackers = (Setting.plugin_scrum[:pbi_trakers] || []).collect{|tracker| tracker.to_i}
-          pbi_trackers.include?(id)
+          Scrum::Setting.pbi_tracker_ids.include?(id)
         end
 
         def self.task_trackers_ids
-          (Setting.plugin_scrum[:task_trakers] || []).collect{|tracker| tracker.to_i}
+          Scrum::Setting.task_tracker_ids
         end
 
         def self.task_trackers
@@ -27,13 +26,11 @@ module Scrum
         end
 
         def is_task?
-          tasks_trackers = (Setting.plugin_scrum[:task_trakers] || []).collect{|tracker| tracker.to_i}
-          tasks_trackers.include?(id)
+          Scrum::Setting.task_tracker_ids.include?(id)
         end
 
         def post_it_css_class
-          setting_name = "tracker_#{id}_color"
-          Setting.plugin_scrum[setting_name] || Redmine::Plugin::registered_plugins[:scrum].settings[:default][setting_name]
+          Scrum::Setting.tracker_id_color(id)
         end
 
       end

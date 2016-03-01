@@ -25,8 +25,7 @@ class Sprint < ActiveRecord::Base
   end
 
   def pbis
-    pbi_trackers = (Setting.plugin_scrum[:pbi_trakers] || []).collect{|tracker| tracker.to_i}
-    issues.all(conditions: {tracker_id: pbi_trackers},
+    issues.all(conditions: {tracker_id: Scrum::Setting.pbi_tracker_ids},
                order: "position ASC").select{|issue| issue.visible?}
   end
 

@@ -2,18 +2,20 @@
 <table id="<%= task_id %>" class="<%= task.post_it_css_class(rotate: true, scale: true, draggable: true) %>">
   <tr>
     <td class="content" colspan="3">
-      <%= link_to_issue(task, tracker: false, truncate: 100) %>
-      <div class="doers-reviewers-post-its-container">
-        <%- task.doers.each do |doer| -%>
-          <div class="<%= Issue.doer_post_it_css_class %>">
-            <%= link_to_user doer %>
-          </div>
-        <%- end -%>
-        <%- task.reviewers.each do |reviewer| -%>
-          <div class="<%= Issue.reviewer_post_it_css_class %>">
-            <%= link_to_user reviewer %>
-          </div>
-        <%- end -%>
+      <div class="content">
+        <%= link_to_issue(task, tracker: false, truncate: 100) %>
+        <div class="doers-reviewers-post-its-container">
+          <%- task.doers.each do |doer| -%>
+            <div class="<%= Issue.doer_post_it_css_class %>">
+              <%= link_to_user doer %>
+            </div>
+          <%- end -%>
+          <%- task.reviewers.each do |reviewer| -%>
+            <div class="<%= Issue.reviewer_post_it_css_class %>">
+              <%= link_to_user reviewer %>
+            </div>
+          <%- end -%>
+        </div>
       </div>
     </td>
   </tr>

@@ -15,13 +15,13 @@ module Scrum
         before_save :update_position, if: lambda {|issue| issue.sprint_id_changed? and issue.is_pbi?}
 
         def has_story_points?
-          ((!((custom_field_id = Setting.plugin_scrum[:story_points_custom_field]).nil?)) and
+          ((!((custom_field_id = Scrum::Setting.story_points_custom_field_id).nil?)) and
            visible_custom_field_values.collect{|value| value.custom_field.id.to_s}.include?(custom_field_id))
         end
 
         def story_points
           if has_story_points? and
-             !((custom_field_id = Setting.plugin_scrum[:story_points_custom_field]).nil?) and
+             !((custom_field_id = Scrum::Setting.story_points_custom_field_id).nil?) and
              !((custom_value = self.custom_value_for(custom_field_id)).nil?) and
              !((value = custom_value.value).blank?)
             value
@@ -30,7 +30,7 @@ module Scrum
 
         def story_points=(value)
           if has_story_points? and
-             !((custom_field_id = Setting.plugin_scrum[:story_points_custom_field]).nil?) and
+             !((custom_field_id = Scrum::Setting.story_points_custom_field_id).nil?) and
              !((custom_value = self.custom_value_for(custom_field_id)).nil?) and
              custom_value.custom_field.valid_field_value?(value)
             custom_value.value = value
@@ -164,13 +164,7 @@ module Scrum
 
         def self.doer_or_reviewer_post_it_css_class(doer)
           classes = ["post-it", doer ? "doer-post-it" : "reviewer-post-it"]
-          if doer
-            classes << (Setting.plugin_scrum["doer_color"] ||
-                        Redmine::Plugin::registered_plugins[:scrum].settings[:default]["doer_color"])
-          else
-            classes << (Setting.plugin_scrum["reviewer_color"] ||
-                        Redmine::Plugin::registered_plugins[:scrum].settings[:default]["reviewer_color"])
-          end
+          classes << (doer ? Scrum::Setting.doer_color : Scrum::Setting.reviewer_color)
           classes << "post-it-rotation-#{rand(5)}"
           classes.join(" ")
         end
@@ -186,7 +180,7 @@ module Scrum
         @@reviewing_activities_ids = nil
         def self.reviewing_activities_ids
           unless @@reviewing_activities_ids
-            @@reviewing_activities_ids = Setting.plugin_scrum[:verification_activities].collect{|activity| activity.to_i}
+            @@reviewing_activities_ids = Scrum::Setting.verification_activity_ids
           end
           @@reviewing_activities_ids
         end

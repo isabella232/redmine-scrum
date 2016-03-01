@@ -1,6 +1,6 @@
 <%- if @continue or defined?(@exception) -%>
 	<%- if defined?(@exception) -%>
-		<%- message = l(:error_creating_pbi)
+		<%- message = l(:error_creating_pbi, message: @exception.message)
 				message_class = "error" -%>
 	<%- else -%>
 		$("#new_issue").each (function() {
