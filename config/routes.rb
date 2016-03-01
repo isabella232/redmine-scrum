@@ -16,6 +16,7 @@ resources :projects do
       get :burndown
       get :burndown_graph
       get :stats
+      post :sort
     end
     collection do
       get :burndown_index
@@ -42,6 +43,9 @@ resources :projects do
   get "release_plan",
       :controller => :scrum, :action => :release_plan,
       :as => :release_plan
+  get "scrum/stats",
+      :controller => :scrum, :action => :stats,
+      :as => :scrum_stats
 
 end
 
@@ -51,6 +55,9 @@ post "issues/:id/story_points",
 post "issues/:id/pending_effort",
      :controller => :scrum, :action => :change_pending_effort,
      :as => :change_pending_effort
+post "issues/:id/pending_efforts",
+     :controller => :scrum, :action => :change_pending_efforts,
+     :as => :change_pending_efforts
 post "issues/:id/assigned_to",
      :controller => :scrum, :action => :change_assigned_to,
      :as => :change_assigned_to

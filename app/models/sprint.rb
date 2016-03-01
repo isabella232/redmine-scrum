@@ -65,8 +65,14 @@ class Sprint < ActiveRecord::Base
     pbis.select{|pbi| pbi.scheduled?}.collect{|pbi| pbi.story_points.to_f}.compact.sum
   end
 
-  def tasks
-    issues.where(:tracker_id => Scrum::Setting.task_tracker_ids).select{|issue| issue.visible?}
+  def tasks(conditions = nil)
+    the_conditions = {:tracker_id => Scrum::Setting.task_tracker_ids}
+    the_conditions.merge!(conditions) if conditions
+    issues.where(the_conditions).select{|issue| issue.visible?}
+  end
+
+  def orphan_tasks
+    tasks(:parent_id => nil)
   end
 
   def estimated_hours
@@ -200,6 +206,15 @@ class Sprint < ActiveRecord::Base
      "#{table}.sprint_end_date",
      "#{table}.name",
      "#{table}.id"]
+  end
+
+  def total_time
+    pbis.collect{|pbi| pbi.total_time}.compact.sum
+  end
+
+  def hours_per_story_point
+    sps = story_points
+    sps > 0 ? (total_time / sps).round(2) : 0.0
   end
 
 private

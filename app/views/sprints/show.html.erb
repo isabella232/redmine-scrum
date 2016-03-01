@@ -7,18 +7,24 @@
 <%= render :partial => "post_its/sprint_board/head",
            :locals => {:project => @project, :sprint => @sprint, :path => method(:sprint_path)} %>
 
-<table id="sprint_board" class="sprint-board">
-  <tr class="sprint-board">
-    <th class="sprint-board"><%= l(:label_pbi_plural) %></th>
-    <%- task_statuses = IssueStatus.task_statuses
-        task_statuses.each do |status| -%>
-      <th class="sprint-board"><%= status.name %></th>
+<%- sprint_board_id = 'sprint_board' -%>
+<table class="sprint-board">
+  <thead>
+    <tr class="sprint-board">
+      <th class="sprint-board"><%= l(:label_pbi_plural) %></th>
+      <%- task_statuses = IssueStatus.task_statuses
+          task_statuses.each do |status| -%>
+        <th class="sprint-board"><%= status.name %></th>
+      <%- end -%>
+    </tr>
+  </thead>
+  <tbody id="<%= sprint_board_id %>">
+    <%- @sprint.pbis.each do |pbi| -%>
+      <%= render :partial => "post_its/sprint_board/pbi_row", :formats => [:html],
+                 :locals => {:project => @project, :sprint_board_id => sprint_board_id, :pbi => pbi,
+                             :task_statuses => task_statuses} %>
     <%- end -%>
-  </tr>
-  <%- @sprint.pbis.each do |pbi| -%>
-    <%= render :partial => "post_its/sprint_board/pbi_row",
-               :locals => {:project => @project, :pbi => pbi, :task_statuses => task_statuses} %>
-  <%- end -%>
+  </tbody>
 </table>
 
 <%- if User.current.allowed_to?(:add_issues, @project) and
@@ -30,5 +36,9 @@
     <%- end -%>
   </div>
 <%- end -%>
+
+<%= render :partial => 'sprints/show', :formats => [:js],
+           :locals => {:sprint => @sprint,
+                       :sprint_board_id => sprint_board_id} %>
 
 <%= render :partial => "common/scrum_footer" %>

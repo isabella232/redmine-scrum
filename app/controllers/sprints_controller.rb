@@ -12,13 +12,14 @@ class SprintsController < ApplicationController
 
   before_filter :find_model_object,
                 :only => [:show, :edit, :update, :destroy, :edit_effort, :update_effort, :burndown,
-                          :stats]
+                          :stats, :sort]
   before_filter :find_project_from_association,
                 :only => [:show, :edit, :update, :destroy, :edit_effort, :update_effort, :burndown,
-                          :stats]
+                          :stats, :sort]
   before_filter :find_project_by_project_id,
                 :only => [:index, :new, :create, :change_task_status, :burndown_index,
                           :stats_index]
+  before_filter :find_pbis, :only => [:sort]
   before_filter :authorize
 
   helper :custom_fields
@@ -26,8 +27,8 @@ class SprintsController < ApplicationController
   helper :timelog
 
   def index
-    if @project.last_sprint
-      redirect_to sprint_path(@project.last_sprint)
+    if (current_sprint = @project.current_sprint)
+      redirect_to sprint_path(current_sprint)
     else
       render_error l(:error_no_sprints)
     end
@@ -249,21 +250,32 @@ class SprintsController < ApplicationController
     @members_efforts = @members_efforts.values.sort{|a, b| a[:member] <=> b[:member]}
 
     @sps_by_pbi_category, @sps_by_pbi_category_total = @sprint.sps_by_pbi_category
-    @sps_by_pbi_category_chart = {:width => 400, :height => 400}
 
     @sps_by_pbi_type, @sps_by_pbi_type_total = @sprint.sps_by_pbi_type
-    @sps_by_pbi_type_chart = {:width => 400, :height => 400}
 
     @sps_by_pbi_creation_date, @sps_by_pbi_creation_date_total = @sprint.sps_by_pbi_creation_date
-    @sps_by_pbi_creation_date_chart = {:width => 400, :height => 400}
 
     @effort_by_activity, @effort_by_activity_total = @sprint.time_entries_by_activity
-    @effort_by_activity_chart = {:width => 400, :height => 400}
 
     if User.current.allowed_to?(:view_sprint_stats_by_member, @project)
       @efforts_by_member_and_activity = @sprint.efforts_by_member_and_activity
       @efforts_by_member_and_activity_chart = {:id => "stats_efforts_by_member_and_activity", :height => 400}
     end
+  end
+
+  def sort
+    new_pbis_order = []
+    params.keys.each do |param|
+      id = param.scan(/pbi\_(\d+)/)
+      new_pbis_order << id[0][0].to_i if id and id[0] and id[0][0]
+    end
+    @pbis.each do |pbi|
+      if (index = new_pbis_order.index(pbi.id))
+        pbi.position = index + 1
+        pbi.save!
+      end
+    end
+    render :nothing => true
   end
 
 private
@@ -290,6 +302,12 @@ private
       member_efforts_days[date] = 0.0
     end
     return member_efforts_days
+  end
+
+  def find_pbis
+    @pbis = @sprint.pbis
+  rescue
+    render_404
   end
 
 end

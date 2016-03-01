@@ -7,18 +7,22 @@
 
 class ScrumController < ApplicationController
 
-  menu_item :product_backlog
+  menu_item :product_backlog, :except => [:stats]
+  menu_item :overview, :only => [:stats]
 
   before_filter :find_issue, :only => [:change_story_points, :change_pending_effort, :change_assigned_to,
-                                       :new_time_entry, :create_time_entry, :edit_task, :update_task]
+                                       :new_time_entry, :create_time_entry, :edit_task, :update_task,
+                                       :change_pending_efforts]
   before_filter :find_sprint, :only => [:new_pbi, :create_pbi]
   before_filter :find_pbi, :only => [:new_task, :create_task, :edit_pbi, :update_pbi, :move_pbi,
                                      :move_to_last_sprint, :move_to_product_backlog]
-  before_filter :find_project_by_project_id, :only => [:release_plan]
+  before_filter :find_project_by_project_id, :only => [:release_plan, :stats]
   before_filter :authorize, :except => [:new_pbi, :create_pbi, :new_task, :create_task,
-                                        :new_time_entry, :create_time_entry]
+                                        :new_time_entry, :create_time_entry,
+                                        :change_pending_efforts]
   before_filter :authorize_add_issues, :only => [:new_pbi, :create_pbi, :new_task, :create_task]
   before_filter :authorize_log_time, :only => [:new_time_entry, :create_time_entry]
+  before_filter :authorize_edit_issues, :only => [:change_pending_efforts]
 
   helper :scrum
   helper :timelog
@@ -38,6 +42,17 @@ class ScrumController < ApplicationController
   def change_pending_effort
     @issue.pending_effort = params[:value]
     render :nothing => true, :status => 200
+  end
+
+  def change_pending_efforts
+    params['pending_efforts'].each_pair do |id, value|
+      pending_effort = PendingEffort.find(id)
+      raise "Invalid pending effort ID #{id}" if pending_effort.nil?
+      raise "Pending effort ID #{id} is not owned by this issue" if pending_effort.issue_id != @issue.id
+      pending_effort.effort = value.to_f
+      pending_effort.save!
+    end
+    redirect_to issue_path(@issue)
   end
 
   def change_assigned_to
@@ -282,6 +297,20 @@ class ScrumController < ApplicationController
     end
   end
 
+  def stats
+    if User.current.allowed_to_view_all_time_entries?(@project)
+      cond = @project.project_condition(Setting.display_subprojects_issues?)
+      @total_hours = TimeEntry.visible.where(cond).sum(:hours).to_f
+    end
+
+    @hours_per_story_point = @project.hours_per_story_point
+    @hours_per_story_point_chart = {:id => "hours_per_story_point", :height => 400}
+
+    @sps_by_pbi_category, @sps_by_pbi_category_total = @project.sps_by_category
+    @sps_by_pbi_type, @sps_by_pbi_type_total = @project.sps_by_pbi_type
+    @effort_by_activity, @effort_by_activity_total = @project.effort_by_activity
+  end
+
 private
 
   def render_task(project, task, params)
@@ -327,6 +356,10 @@ private
 
   def authorize_log_time
     authorize_action_on_current_project(:log_time)
+  end
+
+  def authorize_edit_issues
+    authorize_action_on_current_project(:edit_issues)
   end
 
   def update_attributes(issue, params)

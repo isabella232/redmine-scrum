@@ -176,6 +176,13 @@ module Scrum
                 if @sprint.tasks.empty?
                   tips << l(:label_tip_sprint_without_tasks, :link => sprint_board_link)
                 end
+                # Orphan tasks check.
+                if (orphan_tasks = @sprint.orphan_tasks).any?
+                  issues_link = orphan_tasks.collect{ |task|
+                    link_to_issue(task, :subject => false, :tracker => false)
+                  }.join(', ')
+                  tips << l(:label_tip_sprint_with_orphan_tasks, :link => issues_link)
+                end
                 # No estimated effort check.
                 if @sprint.efforts.empty?
                   tips << l(:label_tip_sprint_without_efforts,

@@ -25,10 +25,10 @@ module Scrum
 
         def add_default_sprint
           if @issue.id.nil?
-            if @issue.is_task? and @project.last_sprint
-              @issue.sprint = @project.last_sprint
-            elsif @issue.is_pbi? and @project.product_backlog
-              @issue.sprint = @project.product_backlog
+            if @issue.is_task? and (current_sprint = @project.current_sprint)
+              @issue.sprint = current_sprint
+            elsif @issue.is_pbi? and (product_backlog = @project.product_backlog)
+              @issue.sprint = product_backlog
             else
               @issue.sprint = nil
             end

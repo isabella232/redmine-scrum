@@ -6,6 +6,14 @@
 	background-image: url(../images/icon-sprint-board-16.png);
 }
 
+.icon-sprint-end {
+	background-image: url(../images/icon-sprint-end-16.png);
+}
+
+.icon-sprint-start {
+	background-image: url(../images/icon-sprint-start-16.png);
+}
+
 .icon-product-backlog {
 	background-image: url(../images/icon-product-backlog-16.png);
 }
