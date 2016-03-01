@@ -29,6 +29,10 @@ class Sprint < ActiveRecord::Base
                order: "position ASC").select{|issue| issue.visible?}
   end
 
+  def story_points
+    pbis.collect{|pbi| pbi.story_points.to_i}.compact.sum
+  end
+
   def self.fields_for_order_statement(table = nil)
     table ||= table_name
     ["(CASE WHEN #{table}.end_date IS NULL THEN 1 ELSE 0 END)",

@@ -21,6 +21,8 @@ resources :projects do
     collection do
       post :sort
       post :create_pbi
+      get :burndown
+      get :burndown_graph
     end
   end
   get "product_backlog/new_pbi/:tracker_id",

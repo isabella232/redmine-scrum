@@ -1,0 +1,15 @@
+<%= render partial: "common/scrum_menu" %>
+
+<h2>
+  <%= l(:label_product_backlog_burndown_chart) %>
+</h2>
+
+<div class="burndown">
+  <%= tag(:img,
+          type: "image/png",
+          src: url_for(controller: :product_backlog,
+                       action: :burndown_graph,
+                       format: :png)) %>
+</div>
+
+<%= render partial: "common/scrum_footer" %>

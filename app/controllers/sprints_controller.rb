@@ -151,31 +151,12 @@ class SprintsController < ApplicationController
 
     graph = Gruff::Line.new("800x500")
     graph.hide_title = true
-    graph.theme = graph_theme
+    graph.theme = Scrum::Utils.graph_theme
     graph.labels = fields
     graph.data l(:label_estimated_effort), estimated_effort
     graph.data l(:field_pending_effort), pending_effort
     headers["Content-Type"] = "image/png"
     send_data(graph.to_blob, :type => "image/png", :disposition => "inline")
-  end
-
-private
-
-  def graph_theme
-    {
-      :colors => ["#DB2626",
-                  "#6A6ADB",
-                  "#64D564",
-                  "#F727F7",
-                  "#EBEB20",
-                  "#303030",
-                  "#12ABAD",
-                  "#808080",
-                  "#B7580B",
-                  "#316211"],
-      :marker_color => "#AAAAAA",
-      :background_colors => ["#FFFFFF", "#FFFFFF"]
-    }
   end
 
 end
