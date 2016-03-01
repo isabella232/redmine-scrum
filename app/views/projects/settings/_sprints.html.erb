@@ -24,10 +24,10 @@
             <%- if User.current.allowed_to?(:manage_sprints, @project) -%>
               <%- unless checked_image sprint.is_product_backlog? -%>
                 <%= link_to l(:label_edit_effort), edit_effort_sprint_path(sprint),
-                            class: "icon icon-time-add" %>
+                            :class => "icon icon-time-add" %>
               <%- end -%>
               <%= link_to l(:button_edit), edit_sprint_path(sprint),
-                          class: "icon icon-edit" %>
+                          :class => "icon icon-edit" %>
               <%= delete_link sprint_path(sprint) %>
             <%- end -%>
           </td>
@@ -39,9 +39,9 @@
 
 <p>
   <%= link_to(l(:label_product_backlog_new),
-              new_project_sprint_path(@project, back_url: "", create_product_backlog: true),
-              class: "icon icon-add") if User.current.allowed_to?(:manage_sprints, @project) and
-                                         @project.product_backlog.nil? %>
-  <%= link_to(l(:label_sprint_new), new_project_sprint_path(@project, back_url: ""),
-              class: "icon icon-add") if User.current.allowed_to?(:manage_sprints, @project) %>
+              new_project_sprint_path(@project, :back_url => "", :create_product_backlog => true),
+              :class => "icon icon-add") if User.current.allowed_to?(:manage_sprints, @project) and
+                                            @project.product_backlog.nil? %>
+  <%= link_to(l(:label_sprint_new), new_project_sprint_path(@project, :back_url => ""),
+              :class => "icon icon-add") if User.current.allowed_to?(:manage_sprints, @project) %>
 </p>

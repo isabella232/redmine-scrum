@@ -25,8 +25,8 @@ class Sprint < ActiveRecord::Base
   end
 
   def pbis
-    issues.all(conditions: {tracker_id: Scrum::Setting.pbi_tracker_ids},
-               order: "position ASC").select{|issue| issue.visible?}
+    issues.all(:conditions => {:tracker_id => Scrum::Setting.pbi_tracker_ids},
+               :order => "position ASC").select{|issue| issue.visible?}
   end
 
   def story_points
@@ -34,7 +34,7 @@ class Sprint < ActiveRecord::Base
   end
 
   def tasks
-    issues.all(conditions: {tracker_id: Scrum::Setting.task_tracker_ids}).select{|issue| issue.visible?}
+    issues.all(:conditions => {:tracker_id => Scrum::Setting.task_tracker_ids}).select{|issue| issue.visible?}
   end
 
   def estimated_hours

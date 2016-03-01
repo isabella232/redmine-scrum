@@ -46,6 +46,8 @@ class SprintsController < ApplicationController
       end
       flash[:notice] = l(:notice_successful_create)
       redirect_to settings_project_path(@project, :tab => "sprints")
+    else
+      render :action => :new
     end
   rescue ActiveRecord::RecordNotFound
     render_404
@@ -58,6 +60,8 @@ class SprintsController < ApplicationController
     if @sprint.update_attributes(params[:sprint])
       flash[:notice] = l(:notice_successful_update)
       redirect_to settings_project_path(@project, :tab => "sprints")
+    else
+      render :action => :edit
     end
   end
 
@@ -136,30 +140,30 @@ class SprintsController < ApplicationController
           pending_effort = efforts.compact.collect{|effort| effort.effort}.compact.sum
         end
         date_label = "#{I18n.l(date, :format => :scrum_day)} #{date.day}"
-        @data << {day: date,
-                  axis_label: date_label,
-                  estimated_effort: estimated_effort,
-                  estimated_effort_tooltip: l(:label_estimated_effort_tooltip,
-                                              date: date_label,
-                                              hours: estimated_effort),
-                  pending_effort: last_pending_effort,
-                  pending_effort_tooltip: l(:label_pending_effort_tooltip,
-                                            date: date_label,
-                                            hours: last_pending_effort)}
+        @data << {:day => date,
+                  :axis_label => date_label,
+                  :estimated_effort => estimated_effort,
+                  :estimated_effort_tooltip => l(:label_estimated_effort_tooltip,
+                                                 :date => date_label,
+                                                 :hours => estimated_effort),
+                  :pending_effort => last_pending_effort,
+                  :pending_effort_tooltip => l(:label_pending_effort_tooltip,
+                                               :date => date_label,
+                                               :hours => last_pending_effort)}
         last_pending_effort = pending_effort
         last_day = date.day
       end
     end
-    @data << {day: last_day,
-              axis_label: l(:label_end),
-              estimated_effort: 0,
-              estimated_effort_tooltip: l(:label_estimated_effort_tooltip,
-                                          date: l(:label_end),
-                                          hours: 0),
-              pending_effort: last_pending_effort,
-              pending_effort_tooltip: l(:label_pending_effort_tooltip,
-                                        date: l(:label_end),
-                                        hours: last_pending_effort)}
+    @data << {:day => last_day,
+              :axis_label => l(:label_end),
+              :estimated_effort => 0,
+              :estimated_effort_tooltip => l(:label_estimated_effort_tooltip,
+                                             :date => l(:label_end),
+                                             :hours => 0),
+              :pending_effort => last_pending_effort,
+              :pending_effort_tooltip => l(:label_pending_effort_tooltip,
+                                           :date => l(:label_end),
+                                           :hours => last_pending_effort)}
   end
 
 end

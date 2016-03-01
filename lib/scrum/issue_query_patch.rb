@@ -5,7 +5,9 @@ module Scrum
     def self.included(base)
       base.class_eval do
 
-        self.available_columns << QueryColumn.new(:sprint, :sortable => lambda {Sprint.fields_for_order_statement}, :groupable => true)
+        self.available_columns << QueryColumn.new(:sprint,
+                                                  :sortable => lambda {Sprint.fields_for_order_statement},
+                                                  :groupable => true)
 
         def initialize_available_filters_with_scrum
           filters = initialize_available_filters_without_scrum

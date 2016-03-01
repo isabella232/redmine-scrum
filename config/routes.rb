@@ -26,8 +26,8 @@ resources :projects do
     end
   end
   get "product_backlog/new_pbi/:tracker_id",
-      controller: :product_backlog, action: :new_pbi,
-      as: :product_backlog_new_pbi
+      :controller => :product_backlog, :action => :new_pbi,
+      :as => :product_backlog_new_pbi
 
 end
 
@@ -44,9 +44,14 @@ post "issues/:id/create_time_entry",
      :controller => :scrum, :action => :create_time_entry,
      :as => :create_time_entry
 get "scrum/:sprint_id/new_pbi/:tracker_id",
-     controller: :scrum, action: :new_pbi,
-     as: :new_pbi
+     :controller => :scrum, :action => :new_pbi,
+     :as => :new_pbi
 post "scrum/:sprint_id/create_pbi",
-     controller: :scrum, action: :create_pbi,
-     as: :create_pbi
-
+     :controller => :scrum, :action => :create_pbi,
+     :as => :create_pbi
+get "scrum/:pbi_id/new/:tracker_id",
+    :controller => :scrum, :action => :new_task,
+    :as => :new_task
+post "scrum/:pbi_id/create",
+     :controller => :scrum, :action => :create_task,
+     :as => :create_task

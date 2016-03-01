@@ -23,9 +23,9 @@
               <%- end -%>
             </table>
           </div>
-          <%= link_to l("datetime.distance_in_words.x_hours", count: @issue.pending_effort),
+          <%= link_to l("datetime.distance_in_words.x_hours", :count => @issue.pending_effort),
                       "#",
-                      onclick: "$(\"#pending_effort\").dialog({modal: true});" %>
+                      :onclick => "$(\"#pending_effort\").dialog({modal: true});" %>
         <%- end -%>
       </td>
     <%- end -%>

@@ -4,7 +4,7 @@
       time_entry_form_id = "time_entry_form_#{task.id}" -%>
   <div id="<%= context_menu_id %>" class="scrum-custom-menu">
     <%- close_context_menu_task_id = "close_context_menu_task_#{task.id}" -%>
-    <%= link_to "", "#", class: "close-icon contextual", id: close_context_menu_task_id %>
+    <%= link_to "", "#", :class => "close-icon contextual", :id => close_context_menu_task_id %>
 
     <fieldset>
       <legend><%= l(:label_user_plural) %></legend>
@@ -22,32 +22,32 @@
       <fieldset>
         <legend><%= l(:label_spent_time) %></legend>
         <%= form_for :time_entry,
-                     url: create_time_entry_path(task),
-                     html: {id: time_entry_form_id} do |f| %>
+                     :url => create_time_entry_path(task),
+                     :html => {:id => time_entry_form_id} do |f| %>
           <%= hidden_field_tag :pbi_status_id, pbi_status_id %>
           <%= hidden_field_tag :other_pbi_status_ids, other_pbi_status_ids.join(",") %>
 
           <label><%= l(:field_hours) %>:</label>
-          <p><%= f.text_field :hours, size: 15, required: true %></p>
+          <p><%= f.text_field :hours, :size => 15, :required => true %></p>
 
           <label><%= l(:field_spent_on) %>:</label>
           <p>
-            <%= f.text_field :spent_on, size: 10, value: Date.today, required: true %>
+            <%= f.text_field :spent_on, :size => 10, :value => Date.today, :required => true %>
             <%= calendar_for(:time_entry_spent_on) %>
           </p>
 
           <label><%= l(:field_comments) %>:</label>
-          <p><%= f.text_field :comments, size: 15, maxlength: 255 %></p>
+          <p><%= f.text_field :comments, :size => 15, :maxlength => 255 %></p>
 
           <label><%= l(:field_activity) %>:</label>
           <p><%= f.select :activity_id,
                           project.activities.collect{|activity| [activity.name, activity.id]},
-                          required: true %></p>
+                          :required => true %></p>
 
           <label><%= l(:field_user) %>:</label>
           <p><%= f.select :user_id,
                           principals_options_for_select(task.assignable_users, task.assigned_to),
-                          required: true %></p>
+                          :required => true %></p>
 
           <%- TimeEntry.new.custom_field_values.each do |value| -%>
             <label><%= value.custom_field.name %>:</label>
@@ -60,15 +60,14 @@
     <%- end -%>
   </div>
 
-  <%= render partial: "post_its/sprint_board/task_context_menu",
-             formats: [:js],
-             locals: {project: project,
-                      pbi_status_id: pbi_status_id,
-                      other_pbi_status_ids: other_pbi_status_ids,
-                      task_id: task_id,
-                      task: task,
-                      context_menu_id: context_menu_id,
-                      context_menu_assigned_to_id: context_menu_assigned_to_id,
-                      close_context_menu_task_id: close_context_menu_task_id,
-                      time_entry_form_id: time_entry_form_id} %>
+  <%= render :partial => "post_its/sprint_board/task_context_menu", :formats => [:js],
+             :locals => {:project => project,
+                         :pbi_status_id => pbi_status_id,
+                         :other_pbi_status_ids => other_pbi_status_ids,
+                         :task_id => task_id,
+                         :task => task,
+                         :context_menu_id => context_menu_id,
+                         :context_menu_assigned_to_id => context_menu_assigned_to_id,
+                         :close_context_menu_task_id => close_context_menu_task_id,
+                         :time_entry_form_id => time_entry_form_id} %>
 <%- end -%>

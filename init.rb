@@ -22,43 +22,44 @@ Redmine::Plugin.register :scrum do
   name              "Scrum Redmine plugin"
   author            "Emilio González Montaña"
   description       "This plugin for Redmine allows to follow Scrum methodology with Redmine projects"
-  version           "0.5.0"
+  version           "0.6.0"
   url               "https://redmine.ociotec.com/projects/redmine-plugin-scrum"
   author_url        "http://ociotec.com"
   requires_redmine  :version_or_higher => "2.3.0"
 
   project_module    :scrum do
     permission      :manage_sprints,
-                    {sprints: [:new, :create, :edit, :update, :destroy, :edit_effort, :update_effort]},
-                    require: :member
+                    {:sprints => [:new, :create, :edit, :update, :destroy, :edit_effort, :update_effort]},
+                    :require => :member
     permission      :view_sprint_board,
-                    {sprints: [:index, :show]}
+                    {:sprints => [:index, :show]}
     permission      :edit_sprint_board,
-                    {sprints: [:change_task_status, :new_pbi, :create_pbi],
-                     scrum: [:change_story_points, :change_pending_effort, :change_assigned_to,
-                             :create_time_entry]},
-                    require: :member
+                    {:sprints => [:change_task_status],
+                     :scrum => [:change_story_points, :change_pending_effort, :change_assigned_to,
+                               :create_time_entry, :new_pbi, :create_pbi, :new_task, :create_task]},
+                    :require => :member
     permission      :view_sprint_burndown,
-                    {sprints: [:burndown_index, :burndown]}
+                    {:sprints => [:burndown_index, :burndown]}
     permission      :view_product_backlog,
-                    {product_backlog: [:index]}
+                    {:product_backlog => [:index]}
     permission      :edit_product_backlog,
-                    {product_backlog: [:sort, :new_pbi, :create_pbi]},
-                    require: :member
+                    {:product_backlog => [:sort, :new_pbi, :create_pbi]},
+                    :require => :member
     permission      :view_product_backlog_burndown,
-                    {product_backlog: [:burndown]}
+                    {:product_backlog => [:burndown]}
   end
 
-  menu              :project_menu, :scrum, {controller: :sprints, action: :index},
-                    caption: :label_scrum, after: :activity, param: :project_id
+  menu              :project_menu, :scrum, {:controller => :sprints, :action => :index},
+                    :caption => :label_scrum, :after => :activity, :param => :project_id
 
-  settings          default: {create_journal_on_pbi_position_change: false,
-                              doer_color: "post-it-color-5",
-                              pbi_tracker_ids: [],
-                              reviewer_color: "post-it-color-3",
-                              story_points_custom_field_id: nil,
-                              task_status_ids: [],
-                              task_tracker_ids: [],
-                              verification_activity_ids: []},
-                    partial: "settings/scrum_settings"
+  settings          :default => {:create_journal_on_pbi_position_change => "0",
+                                 :doer_color => "post-it-color-5",
+                                 :pbi_tracker_ids => [],
+                                 :reviewer_color => "post-it-color-3",
+                                 :story_points_custom_field_id => nil,
+                                 :task_status_ids => [],
+                                 :task_tracker_ids => [],
+                                 :verification_activity_ids => [],
+                                 :inherit_pbi_attributes => "1"},
+                    :partial => "settings/scrum_settings"
 end

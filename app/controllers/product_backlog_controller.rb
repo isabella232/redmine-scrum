@@ -4,11 +4,11 @@ class ProductBacklogController < ApplicationController
   model_object Issue
 
   before_filter :find_project_by_project_id,
-                only: [:index, :sort, :new_pbi, :create_pbi, :burndown]
+                :only => [:index, :sort, :new_pbi, :create_pbi, :burndown]
   before_filter :find_product_backlog,
-                only: [:index, :render_pbi, :sort, :new_pbi, :create_pbi, :burndown]
-  before_filter :find_pbis, only: [:index, :sort]
-  before_filter :check_issue_positions, only: [:index]
+                :only => [:index, :render_pbi, :sort, :new_pbi, :create_pbi, :burndown]
+  before_filter :find_pbis, :only => [:index, :sort]
+  before_filter :check_issue_positions, :only => [:index]
   before_filter :authorize
 
   helper :scrum
@@ -57,18 +57,24 @@ class ProductBacklogController < ApplicationController
   def burndown
     @data = []
     @project.sprints.each do |sprint|
-      @data << {axis_label: sprint.name,
-                story_points: sprint.story_points,
-                pending_story_points: 0}
+      @data << {:axis_label => sprint.name,
+                :story_points => sprint.story_points,
+                :pending_story_points => 0}
     end
 
-    story_points_per_sprint = @data.last[:story_points] || 0
+    i = @data.length - 1
+    story_points_per_sprint = 0
+    while (story_points_per_sprint == 0 and i >= 0)
+      story_points_per_sprint = @data[i][:story_points]
+      i -= 1
+    end
+    story_points_per_sprint = 1 if story_points_per_sprint == 0
     pending_story_points = @project.product_backlog.story_points
     new_sprints = 1
     while pending_story_points > 0
-      @data << {axis_label: "#{l(:field_sprint)} +#{new_sprints}",
-                story_points: ((story_points_per_sprint <= pending_story_points) ? story_points_per_sprint : pending_story_points),
-                pending_story_points: 0}
+      @data << {:axis_label => "#{l(:field_sprint)} +#{new_sprints}",
+                :story_points => ((story_points_per_sprint <= pending_story_points) ? story_points_per_sprint : pending_story_points),
+                :pending_story_points => 0}
       pending_story_points -= story_points_per_sprint
       new_sprints += 1
     end
@@ -78,9 +84,9 @@ class ProductBacklogController < ApplicationController
       @data[i][:pending_story_points] = @data[i][:story_points] +
         (others.blank? ? 0 : others.collect{|other| other[:story_points]}.sum)
       @data[i][:story_points_tooltip] = l(:label_pending_story_points,
-                                          pending_story_points: @data[i][:pending_story_points],
-                                          sprint: @data[i][:axis_label],
-                                          story_points: @data[i][:story_points])
+                                          :pending_story_points => @data[i][:pending_story_points],
+                                          :sprint => @data[i][:axis_label],
+                                          :story_points => @data[i][:story_points])
     end
   end
 

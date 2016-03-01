@@ -6,13 +6,13 @@ module Scrum
       base.class_eval do
 
         belongs_to :sprint
-        has_many :pending_efforts, order: "date ASC"
+        has_many :pending_efforts, :order => "date ASC"
 
-        acts_as_list scope: :sprint
+        acts_as_list :scope => :sprint
 
-        safe_attributes :sprint_id, if: lambda {|issue, user| user.allowed_to?(:edit_issues, issue.project)}
+        safe_attributes :sprint_id, :if => lambda {|issue, user| user.allowed_to?(:edit_issues, issue.project)}
 
-        before_save :update_position, if: lambda {|issue| issue.sprint_id_changed? and issue.is_pbi?}
+        before_save :update_position, :if => lambda {|issue| issue.sprint_id_changed? and issue.is_pbi?}
 
         def has_story_points?
           ((!((custom_field_id = Scrum::Setting.story_points_custom_field_id).nil?)) and
@@ -60,15 +60,15 @@ module Scrum
         def doers
           users = []
           users << assigned_to unless assigned_to.nil?
-          time_entries = TimeEntry.all(conditions: {issue_id: id,
-                                                    activity_id: Issue.doing_activities_ids})
+          time_entries = TimeEntry.all(:conditions => {:issue_id => id,
+                                                       :activity_id => Issue.doing_activities_ids})
           users.concat(time_entries.collect{|t| t.user}).uniq.sort
         end
 
         def reviewers
           users = []
-          time_entries = TimeEntry.all(conditions: {issue_id: id,
-                                                    activity_id: Issue.reviewing_activities_ids})
+          time_entries = TimeEntry.all(:conditions => {:issue_id => id,
+                                                       :activity_id => Issue.reviewing_activities_ids})
           users.concat(time_entries.collect{|t| t.user}).uniq.sort
         end
 
@@ -116,13 +116,39 @@ module Scrum
 
         def pending_effort=(new_effort)
           if is_task? and id and new_effort
-            effort = PendingEffort.first(conditions: {issue_id: id, date: Date.today})
+            effort = PendingEffort.first(:conditions => {:issue_id => id, :date => Date.today})
             if effort.nil?
-              effort = PendingEffort.new(issue_id: id, date: Date.today, effort: new_effort)
+              effort = PendingEffort.new(:issue_id => id, :date => Date.today, :effort => new_effort)
             else
               effort.effort = new_effort
             end
             effort.save!
+          end
+        end
+
+        def init_from_params(params)
+        end
+
+        def inherit_from_issue(source_issue)
+          [:priority_id, :category_id, :fixed_version_id, :start_date, :due_date].each do |attribute|
+            self.copy_attribute(source_issue, attribute)
+          end
+          self.custom_field_values = source_issue.custom_field_values.inject({}){|h, v| h[v.custom_field_id] = v.value; h}
+        end
+
+        def field?(field)
+          self.safe_attribute?(field) and (self.tracker.field?(field) or self.required_attribute?(field))
+        end
+
+        def custom_field?(custom_field)
+          self.tracker.custom_field?(custom_field)
+        end
+
+      protected
+
+        def copy_attribute(source_issue, attribute)
+          if self.safe_attribute?(attribute) and source_issue.safe_attribute?(attribute)
+            self.send("#{attribute}=", source_issue.send("#{attribute}"))
           end
         end
 
@@ -172,7 +198,7 @@ module Scrum
         @@activities = nil
         def self.activities
           unless @@activities
-            @@activities = Enumeration.all(conditions: {type: "TimeEntryActivity"})
+            @@activities = Enumeration.all(:conditions => {:type => "TimeEntryActivity"})
           end
           @@activities
         end
@@ -188,7 +214,7 @@ module Scrum
         @@doing_activities_ids = nil
         def self.doing_activities_ids
           unless @@doing_activities_ids
-            reviewing_activities = Enumeration.all(conditions: {id: reviewing_activities_ids})
+            reviewing_activities = Enumeration.all(:conditions => {:id => reviewing_activities_ids})
             doing_activities = activities - reviewing_activities
             @@doing_activities_ids = doing_activities.collect{|a| a.id}
           end

@@ -3,7 +3,6 @@
 		$("#<%= pbi_status_id %>").droppable({
 			accept: ".sprint-task",
 			drop: function(event, ui) {
-				console.log("container_task_id_js: " + window["container_" + $(ui.draggable).attr("id")]);
 				if ($.isFunction($.fn.setupAjaxIndicator)) {
 					setupAjaxIndicator();
 				}

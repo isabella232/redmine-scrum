@@ -24,14 +24,14 @@
 <%- if @project.sprints_and_product_backlog.empty? -%>
   <p class="nodata"><%= l(:label_no_data) %></p>
 <%- else -%>
-  <%= labelled_form_for @sprint, url: update_effort_sprint_path(@sprint) do |f| %>
+  <%= labelled_form_for @sprint, :url => update_effort_sprint_path(@sprint) do |f| %>
     <%- days = (@sprint.end_date - @sprint.start_date).to_i + 1 -%>
     <table class="list" style="overflow: auto;">
       <thead>
         <tr>
           <th><%= l(:field_user) %></th>
           <%- ((@sprint.start_date)..(@sprint.end_date)).each do |date| -%>
-            <th><%= I18n.l(date, format: :scrum_day) %><br /><%= date.day %></th>
+            <th><%= I18n.l(date, :format => :scrum_day) %><br /><%= date.day %></th>
           <%- end -%>
         </tr>
       </thead>
@@ -45,7 +45,7 @@
                                                                       @sprint.start_date + day) -%>
                 <%= text_field_tag "user[#{member.user.id}][#{day}]",
                                    effort.nil? ? nil : effort.effort,
-                                   size: 2 %>
+                                   :size => 2 %>
               </td>
             <%- end -%>
           </tr>
@@ -56,4 +56,4 @@
   <% end %>
 <%- end -%>
 
-<%= render partial: "common/scrum_footer" %>
+<%= render :partial => "common/scrum_footer" %>
