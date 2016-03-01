@@ -7,7 +7,7 @@ class AddSprintsIsProductBacklog < ActiveRecord::Migration
     has_many :sprints
   end
 
-  def up
+  def self.up
     add_column :sprints, :is_product_backlog, :boolean, :default => false
     add_index :sprints, [:is_product_backlog], :name => "sprints_is_product_backlog"
     Sprint.all.each do |sprint|
@@ -19,7 +19,7 @@ class AddSprintsIsProductBacklog < ActiveRecord::Migration
     end
   end
 
-  def down
+  def self.down
     remove_column :sprints, :is_product_backlog
   end
 end

@@ -1,16 +1,12 @@
-require "scrum/gruff/themes"
-require "scrum/gruff/bar"
-
 class ProductBacklogController < ApplicationController
 
   menu_item :scrum
   model_object Issue
 
   before_filter :find_project_by_project_id,
-                only: [:index, :sort, :new_pbi, :create_pbi, :burndown, :burndown_graph]
+                only: [:index, :sort, :new_pbi, :create_pbi, :burndown]
   before_filter :find_product_backlog,
-                only: [:index, :render_pbi, :sort, :new_pbi, :create_pbi,
-                       :burndown, :burndown_graph]
+                only: [:index, :render_pbi, :sort, :new_pbi, :create_pbi, :burndown]
   before_filter :find_pbis, only: [:index, :sort]
   before_filter :check_issue_positions, only: [:index]
   before_filter :authorize
@@ -59,42 +55,33 @@ class ProductBacklogController < ApplicationController
   end
 
   def burndown
-  end
-
-  def burndown_graph
-    fields = {}
-    data = []
-    index = 0
+    @data = []
     @project.sprints.each do |sprint|
-      fields[index] = sprint.name
-      data << sprint.story_points
-      index += 1
+      @data << {axis_label: sprint.name,
+                story_points: sprint.story_points,
+                pending_story_points: 0}
     end
 
-    story_points_per_sprint = data.last || 0
+    story_points_per_sprint = @data.last[:story_points] || 0
     pending_story_points = @project.product_backlog.story_points
     new_sprints = 1
     while pending_story_points > 0
-      fields[index] = "+#{new_sprints}"
-      data << ((story_points_per_sprint <= pending_story_points) ? story_points_per_sprint : pending_story_points)
+      @data << {axis_label: "#{l(:field_sprint)} +#{new_sprints}",
+                story_points: ((story_points_per_sprint <= pending_story_points) ? story_points_per_sprint : pending_story_points),
+                pending_story_points: 0}
       pending_story_points -= story_points_per_sprint
-      index += 1
       new_sprints += 1
     end
 
-    for i in 0..(data.length)
-      others = data[(i + 1)..(data.length - 1)]
-      data[i] += others.sum unless others.blank?
+    for i in 0..(@data.length - 1)
+      others = @data[(i + 1)..(@data.length - 1)]
+      @data[i][:pending_story_points] = @data[i][:story_points] +
+        (others.blank? ? 0 : others.collect{|other| other[:story_points]}.sum)
+      @data[i][:story_points_tooltip] = l(:label_pending_story_points,
+                                          pending_story_points: @data[i][:pending_story_points],
+                                          sprint: @data[i][:axis_label],
+                                          story_points: @data[i][:story_points])
     end
-
-    graph = Gruff::Bar.new("800x500")
-    graph.hide_title = true
-    graph.theme = Scrum::Utils.graph_theme
-    graph.labels = fields
-    graph.data l(:label_story_point_plural), data
-    graph.minimum_value = 0
-    headers["Content-Type"] = "image/png"
-    send_data(graph.to_blob, :type => "image/png", :disposition => "inline")
   end
 
 private

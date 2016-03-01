@@ -6,7 +6,7 @@ class CreatePendingEfforts < ActiveRecord::Migration
   class PendingEffort < ActiveRecord::Base
   end
 
-  def up
+  def self.up
     create_table :pending_efforts, :force => true do |t|
       t.column :issue_id,          :integer,                           :null => false
       t.column :date,              :date,                              :null => false
@@ -32,7 +32,7 @@ class CreatePendingEfforts < ActiveRecord::Migration
     end
   end
 
-  def down
+  def self.down
     drop_table :pending_efforts
   end
 end

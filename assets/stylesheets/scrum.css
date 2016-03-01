@@ -364,3 +364,21 @@ table.sprint-pbi input, table.sprint-task input {
 .scrum-dialog {
 	display: none;
 }
+
+.graphic-tooltip {
+	position: absolute;
+	background: #EEE;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	-ms-border-radius: 3px;
+	-o-border-radius: 3px;
+	border-radius: 3px;
+	padding: 5px;
+	-webkit-box-shadow: 0 1px 3px #000;
+	-moz-box-shadow: 0 1px 3px #000;
+	-ms-box-shadow: 0 1px 3px #000;
+	-o-box-shadow: 0 1px 3px #000;
+	box-shadow: 0 1px 3px #000;
+	border-collapse: separate;
+	display: none
+}

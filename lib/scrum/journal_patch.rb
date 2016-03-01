@@ -13,7 +13,7 @@ module Scrum
           continue = true
           if journalized_type == "Issue" and !(Scrum::Setting.create_journal_on_pbi_position_change)
             details.delete_if{|detail| detail.prop_key == "position"}
-            continue = false if notes.empty? and details.empty?
+            continue = false if ((notes.nil? or notes.empty?) and (details.nil? or details.empty?))
           end
           return(continue)
         end

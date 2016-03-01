@@ -1,17 +1,12 @@
-require "scrum/gruff/themes"
-require "scrum/gruff/line"
-
 class SprintsController < ApplicationController
 
   menu_item :scrum
   model_object Sprint
 
   before_filter :find_model_object,
-                :only => [:show, :edit, :update, :destroy, :edit_effort, :update_effort,
-                          :burndown, :burndown_graph]
+                :only => [:show, :edit, :update, :destroy, :edit_effort, :update_effort, :burndown]
   before_filter :find_project_from_association,
-                :only => [:show, :edit, :update, :destroy, :edit_effort, :update_effort,
-                          :burndown, :burndown_graph]
+                :only => [:show, :edit, :update, :destroy, :edit_effort, :update_effort, :burndown]
   before_filter :find_project_by_project_id,
                 :only => [:index, :new, :create, :change_task_status, :burndown_index]
   before_filter :authorize
@@ -104,13 +99,13 @@ class SprintsController < ApplicationController
             sprint_effort = SprintEffort.new(:sprint_id => @sprint.id,
                                              :user_id => user_id,
                                              :date => @sprint.start_date + day,
-                                             :effort => effort.to_i)
+                                             :effort => effort)
           end
         elsif effort.blank?
           sprint_effort.destroy
           sprint_effort = nil
         else
-          sprint_effort.effort = effort.to_i
+          sprint_effort.effort = effort
         end
         sprint_effort.save! unless sprint_effort.nil?
       end
@@ -126,37 +121,45 @@ class SprintsController < ApplicationController
   end
 
   def burndown
-  end
-
-  def burndown_graph
-    fields = {};
-    estimated_effort = [];
-    pending_effort = []
-    index = 0
+    @data = []
+    last_pending_effort = @sprint.estimated_hours
+    last_day = nil
     ((@sprint.start_date)..(@sprint.end_date)).each do |date|
       if @sprint.efforts.count(:conditions => ["date = ?", date]) > 0
-        fields[index] = "#{I18n.l(date, :format => :scrum_day)}\n#{date.day}"
-        index += 1
         efforts = @sprint.efforts.all(:conditions => ["date >= ?", date])
-        estimated_effort << efforts.collect{|effort| effort.effort}.sum
+        estimated_effort = efforts.collect{|effort| effort.effort}.compact.sum
         if date <= Date.today
           efforts = []
           @sprint.issues.each do |issue|
             efforts << issue.pending_efforts.last(:conditions => ["date <= ?", date])
           end
-          pending_effort << efforts.compact.collect{|effort| effort.effort}.compact.sum
+          pending_effort = efforts.compact.collect{|effort| effort.effort}.compact.sum
         end
+        date_label = "#{I18n.l(date, :format => :scrum_day)} #{date.day}"
+        @data << {day: date,
+                  axis_label: date_label,
+                  estimated_effort: estimated_effort,
+                  estimated_effort_tooltip: l(:label_estimated_effort_tooltip,
+                                              date: date_label,
+                                              hours: estimated_effort),
+                  pending_effort: last_pending_effort,
+                  pending_effort_tooltip: l(:label_pending_effort_tooltip,
+                                            date: date_label,
+                                            hours: last_pending_effort)}
+        last_pending_effort = pending_effort
+        last_day = date.day
       end
     end
-
-    graph = Gruff::Line.new("800x500")
-    graph.hide_title = true
-    graph.theme = Scrum::Utils.graph_theme
-    graph.labels = fields
-    graph.data l(:label_estimated_effort), estimated_effort
-    graph.data l(:field_pending_effort), pending_effort
-    headers["Content-Type"] = "image/png"
-    send_data(graph.to_blob, :type => "image/png", :disposition => "inline")
+    @data << {day: last_day,
+              axis_label: l(:label_end),
+              estimated_effort: 0,
+              estimated_effort_tooltip: l(:label_estimated_effort_tooltip,
+                                          date: l(:label_end),
+                                          hours: 0),
+              pending_effort: last_pending_effort,
+              pending_effort_tooltip: l(:label_pending_effort_tooltip,
+                                        date: l(:label_end),
+                                        hours: last_pending_effort)}
   end
 
 end

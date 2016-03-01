@@ -30,7 +30,15 @@ class Sprint < ActiveRecord::Base
   end
 
   def story_points
-    pbis.collect{|pbi| pbi.story_points.to_i}.compact.sum
+    pbis.collect{|pbi| pbi.story_points.to_f}.compact.sum
+  end
+
+  def tasks
+    issues.all(conditions: {tracker_id: Scrum::Setting.task_tracker_ids}).select{|issue| issue.visible?}
+  end
+
+  def estimated_hours
+    tasks.collect{|task| task.estimated_hours}.compact.sum
   end
 
   def self.fields_for_order_statement(table = nil)
