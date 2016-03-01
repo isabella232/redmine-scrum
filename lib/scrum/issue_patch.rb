@@ -118,7 +118,7 @@ module Scrum
           if is_task? and id and new_effort
             effort = PendingEffort.first(:conditions => {:issue_id => id, :date => Date.today})
             if effort.nil?
-              date = (pending_efforts.empty? and sprint and sprint.start_date) ? sprint.start_date : Date.today
+              date = (pending_efforts.empty? and sprint and sprint.sprint_start_date) ? sprint.sprint_start_date : Date.today
               effort = PendingEffort.new(:issue_id => id, :date => date, :effort => new_effort)
             else
               effort.effort = new_effort

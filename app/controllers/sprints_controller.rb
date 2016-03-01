@@ -40,7 +40,7 @@ class SprintsController < ApplicationController
     @sprint = Sprint.new(:project => @project)
     if params[:create_product_backlog]
       @sprint.name = l(:label_product_backlog)
-      @sprint.start_date = @sprint.end_date = Date.today
+      @sprint.sprint_start_date = @sprint.sprint_end_date = Date.today
     end
   end
 
@@ -105,7 +105,7 @@ class SprintsController < ApplicationController
       user_id = user_id.to_i
       days.each_pair do |day, effort|
         day = day.to_i
-        date = @sprint.start_date + day.to_i
+        date = @sprint.sprint_start_date + day.to_i
         sprint_effort = SprintEffort.find(:first,
                                           :conditions => {:sprint_id => @sprint.id,
                                                           :user_id => user_id,
@@ -114,7 +114,7 @@ class SprintsController < ApplicationController
           unless effort.blank?
             sprint_effort = SprintEffort.new(:sprint_id => @sprint.id,
                                              :user_id => user_id,
-                                             :date => @sprint.start_date + day,
+                                             :date => @sprint.sprint_start_date + day,
                                              :effort => effort)
           end
         elsif effort.blank?
@@ -144,7 +144,7 @@ class SprintsController < ApplicationController
     @data = []
     last_pending_effort = @sprint.estimated_hours
     last_day = nil
-    ((@sprint.start_date)..(@sprint.end_date)).each do |date|
+    ((@sprint.sprint_start_date)..(@sprint.sprint_end_date)).each do |date|
       if @sprint.efforts.count(:conditions => ["date = ?", date]) > 0
         efforts = @sprint.efforts.all(:conditions => ["date >= ?", date])
         estimated_effort = efforts.collect{|effort| effort.effort}.compact.sum

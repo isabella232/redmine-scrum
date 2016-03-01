@@ -16,8 +16,8 @@
       <% for sprint in @project.sprints_and_product_backlog %>
         <tr class="<%= cycle 'odd', 'even' %>">
           <td><%= link_to(h(sprint.name), sprint.is_product_backlog ? project_product_backlog_index_path(@project) : sprint) %></td>
-          <td align="center"><%= format_date(sprint.start_date) %></td>
-          <td align="center"><%= format_date(sprint.end_date) %></td>
+          <td align="center"><%= format_date(sprint.sprint_start_date) %></td>
+          <td align="center"><%= format_date(sprint.sprint_end_date) %></td>
           <td align="center"><%= checked_image sprint.is_product_backlog? %></td>
           <td align="center"><%= sprint.pbis.count %></td>
           <td class="buttons">

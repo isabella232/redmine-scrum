@@ -17,9 +17,9 @@ class Sprint < ActiveRecord::Base
   validates_length_of :name, :maximum => 60
   validates_presence_of :name
 
-  validates_presence_of :start_date
+  validates_presence_of :sprint_start_date
 
-  validates_presence_of :end_date
+  validates_presence_of :sprint_end_date
   
   before_destroy :update_project_product_backlog
 
@@ -151,8 +151,8 @@ class Sprint < ActiveRecord::Base
 
   def self.fields_for_order_statement(table = nil)
     table ||= table_name
-    ["(CASE WHEN #{table}.end_date IS NULL THEN 1 ELSE 0 END)",
-     "#{table}.end_date",
+    ["(CASE WHEN #{table}.sprint_end_date IS NULL THEN 1 ELSE 0 END)",
+     "#{table}.sprint_end_date",
      "#{table}.name",
      "#{table}.id"]
   end
