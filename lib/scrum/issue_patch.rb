@@ -24,7 +24,8 @@ module Scrum
              !((custom_field_id = Scrum::Setting.story_points_custom_field_id).nil?) and
              !((custom_value = self.custom_value_for(custom_field_id)).nil?) and
              !((value = custom_value.value).blank?)
-            value
+            # Replace invalid float number separatos (i.e. 0,5) with valid separator (i.e. 0.5)
+            value.gsub(",", ".")
           end
         end
 
@@ -38,6 +39,23 @@ module Scrum
           else
             raise
           end
+        end
+
+        def scheduled?
+          is_scheduled = false
+          if created_on and sprint and sprint.sprint_start_date
+            if is_pbi?
+              is_scheduled = created_on < sprint.sprint_start_date
+            elsif is_task?
+              is_scheduled = created_on <= sprint.sprint_start_date
+            end
+          end
+          return is_scheduled
+        end
+
+        def use_in_burndown?
+          is_task? and IssueStatus.task_statuses.include?(status) and
+              parent and parent.is_pbi? and IssueStatus.pbi_statuses.include?(parent.status)
         end
 
         def is_pbi?
@@ -97,11 +115,11 @@ module Scrum
         end
 
         def self.doer_post_it_css_class
-          doer_or_reviewer_post_it_css_class(true)
+          doer_or_reviewer_post_it_css_class(:doer)
         end
 
         def self.reviewer_post_it_css_class
-          doer_or_reviewer_post_it_css_class(false)
+          doer_or_reviewer_post_it_css_class(:reviewer)
         end
 
         def has_pending_effort?
@@ -109,14 +127,18 @@ module Scrum
         end
 
         def pending_effort
-          if has_pending_effort?
-            pending_efforts.last.effort
+          if self.is_task? and self.has_pending_effort?
+            return pending_efforts.last.effort
+          elsif self.is_pbi?
+            return self.children.collect{|task| task.pending_effort}.compact.sum
           end
         end
 
         def pending_effort=(new_effort)
           if is_task? and id and new_effort
             effort = PendingEffort.first(:conditions => {:issue_id => id, :date => Date.today})
+            # Replace invalid float number separatos (i.e. 0,5) with valid separator (i.e. 0.5)
+            new_effort.gsub!(",", ".")
             if effort.nil?
               date = (pending_efforts.empty? and sprint and sprint.sprint_start_date) ? sprint.sprint_start_date : Date.today
               effort = PendingEffort.new(:issue_id => id, :date => date, :effort => new_effort)
@@ -147,6 +169,75 @@ module Scrum
 
         def set_on_top
           @set_on_top = true
+        end
+
+        def total_time
+          the_pending_effort = self.pending_effort.nil? ? 0.0 : self.pending_effort
+          if self.is_pbi?
+            the_spent_hours = self.children.collect{|task| task.spent_hours}.compact.sum
+          elsif self.is_task?
+            the_spent_hours = self.spent_hours
+          end
+          the_spent_hours = the_spent_hours.nil? ? 0.0 : the_spent_hours
+          return (the_pending_effort + the_spent_hours)
+        end
+
+        def deviation_ratio
+          the_estimated_hours = self.estimated_hours.nil? ? 0.0 : self.estimated_hours
+          if ((self.is_pbi? or self.is_task?) and (the_estimated_hours > 0.0))
+            return ((self.total_time * 100.0) / the_estimated_hours).round
+          end
+        end
+
+        def has_blocked_field?
+          return ((!((custom_field_id = Scrum::Setting.blocked_custom_field_id).nil?)) and
+                  visible_custom_field_values.collect{|value| value.custom_field.id.to_s}.include?(custom_field_id))
+        end
+
+        def blocked?
+          if has_blocked_field? and
+              !((custom_field_id = Scrum::Setting.blocked_custom_field_id).nil?) and
+              !((custom_value = self.custom_value_for(custom_field_id)).nil?) and
+              !((value = custom_value.value).blank?)
+            return (value == "1")
+          end
+        end
+
+        def self.blocked_post_it_css_class
+          return doer_or_reviewer_post_it_css_class(:blocked)
+        end
+
+        def move_pbi_to(position, other_pbi_id = nil)
+          if !(sprint.nil?) and is_pbi?
+            case position
+              when "top"
+                move_issue_to_the_begin_of_the_sprint
+                save!
+              when "bottom"
+                move_issue_to_the_end_of_the_sprint
+                save!
+              when "before", "after"
+                if other_pbi_id.nil? or (other_pbi = Issue.find(other_pbi_id)).nil?
+                  raise "Other PBI ID ##{other_pbi_id} is invalid"
+                elsif !(other_pbi.is_pbi?)
+                  raise "Issue ##{other_pbi_id} is not a PBI"
+                elsif (other_pbi.sprint_id != sprint_id)
+                  raise "Other PBI ID ##{other_pbi_id} is not in this product backlog"
+                else
+                  move_issue_respecting_to_pbi(other_pbi, position == "after")
+                end
+            end
+          end
+        end
+
+        def is_first_pbi?
+          min = min_position
+          return ((!(position.nil?)) and (!(min.nil?)) and (position <= min))
+        end
+
+        def is_last_pbi?
+          max = max_position
+          return ((!(position.nil?)) and (!(max.nil?)) and (position >= max))
         end
 
       protected
@@ -181,25 +272,57 @@ module Scrum
           end
         end
 
-        def move_issue_to_the_begin_of_the_sprint
-          min_position = nil
+        def min_position
+          min = nil
           sprint.pbis.each do |pbi|
-            min_position = pbi.position if min_position.nil? or (pbi.position < min_position)
+            min = pbi.position if min.nil? or (pbi.position < min)
           end
-          self.position = min_position.nil? ? 1 : (min_position - 1)
+          return min
+        end
+
+        def max_position
+          max = nil
+          sprint.pbis.each do |pbi|
+            max = pbi.position if max.nil? or (pbi.position > max)
+          end
+          return max
+        end
+
+        def move_issue_to_the_begin_of_the_sprint
+          min = min_position
+          self.position = min.nil? ? 1 : (min - 1)
         end
 
         def move_issue_to_the_end_of_the_sprint
-          max_position = nil
-          sprint.pbis.each do |pbi|
-            max_position = pbi.position if max_position.nil? or (pbi.position > max_position)
-          end
-          self.position = max_position.nil? ? 1 : (max_position + 1)
+          max = max_position
+          self.position = max.nil? ? 1 : (max + 1)
         end
 
-        def self.doer_or_reviewer_post_it_css_class(doer)
-          classes = ["post-it", doer ? "doer-post-it" : "reviewer-post-it"]
-          classes << (doer ? Scrum::Setting.doer_color : Scrum::Setting.reviewer_color)
+        def move_issue_respecting_to_pbi(other_pbi, after)
+          self.position = other_pbi.position
+          self.position += 1 if after
+          self.save!
+          sprint.pbis(:position_above => after ? self.position : self.position - 1).each do |next_pbi|
+            if next_pbi.id != self.id
+              next_pbi.position += 1
+              next_pbi.save!
+            end
+          end
+        end
+
+        def self.doer_or_reviewer_post_it_css_class(type)
+          classes = ["post-it"]
+          case type
+            when :doer
+              classes << "doer-post-it"
+              classes << Scrum::Setting.doer_color
+            when :reviewer
+              classes << "reviewer-post-it"
+              classes << Scrum::Setting.reviewer_color
+            when :blocked
+              classes << "blocked-post-it"
+              classes << Scrum::Setting.blocked_color
+          end
           classes << "post-it-rotation-#{rand(5)}"
           classes.join(" ")
         end

@@ -21,7 +21,7 @@ module ScrumHelper
         text = hours unless options[:ignore_zero] and (hours.blank? or (hours == "0"))
       end
       unless text.blank?
-        text = "#{text} h"
+        text = "#{text}h"
         unless options[:link].nil?
           text = link_to(text, options[:link])
         end
@@ -53,6 +53,38 @@ module ScrumHelper
       parts << "#{l(:label_updated_time, time_tag(pbi.updated_on))}"
     end
     render :inline => parts.join(", ")
+  end
+
+  def render_issue_icons(issue)
+    icons = []
+    if ((issue.is_pbi? and Scrum::Setting.render_pbis_deviations) or
+        (issue.is_task? and Scrum::Setting.render_tasks_deviations))
+      deviation_ratio = issue.deviation_ratio
+      unless deviation_ratio.nil?
+        if deviation_ratio >= Scrum::Setting.major_deviation_ratio
+          icons << render_issue_icon(MAJOR_DEVIATION_ICON, deviation_ratio)
+        elsif deviation_ratio >= Scrum::Setting.minor_deviation_ratio
+          icons << render_issue_icon(MINOR_DEVIATION_ICON, deviation_ratio)
+        elsif deviation_ratio <= Scrum::Setting.below_deviation_ratio
+          icons << render_issue_icon(BELOW_DEVIATION_ICON, deviation_ratio)
+        end
+      end
+    end
+    render :inline => icons.join("\n")
+  end
+
+  DEVIATION_ICONS = [MAJOR_DEVIATION_ICON = "exclamation.png",
+                     MINOR_DEVIATION_ICON = "warning.png",
+                     BELOW_DEVIATION_ICON = "lightning.png"]
+
+private
+
+  def render_issue_icon(image_path, deviation_ratio = nil)
+    content_tag("div") do
+      options = {:class => "float float-icon"}
+      options[:title] = l(:label_deviation, :deviation => deviation_ratio) unless deviation_ratio.nil?
+      image_tag(image_path, options)
+    end
   end
 
 end

@@ -1,6 +1,6 @@
 <input id="<%= element_id %>" type="text" class="editable-time" size="2"
-       title="<%= title %>" value="<%= value %>" <%= "readonly" unless editable %> />
-
+       title="<%= title %>" value="<%= value %>" <%= "readonly" unless editable %>
+/><% if defined?(unit) %><span <% if defined?(unit_title) %> title="<%= unit_title %>"<% end %>><%= unit %></span><% end %>
 <%- if editable -%>
   <%= javascript_tag do %>
     $(document).ready(function() {

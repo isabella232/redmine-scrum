@@ -7,15 +7,18 @@
 
 class SprintsController < ApplicationController
 
-  menu_item :scrum
+  menu_item :sprint
   model_object Sprint
 
   before_filter :find_model_object,
-                :only => [:show, :edit, :update, :destroy, :edit_effort, :update_effort, :burndown]
+                :only => [:show, :edit, :update, :destroy, :edit_effort, :update_effort, :burndown,
+                          :stats]
   before_filter :find_project_from_association,
-                :only => [:show, :edit, :update, :destroy, :edit_effort, :update_effort, :burndown]
+                :only => [:show, :edit, :update, :destroy, :edit_effort, :update_effort, :burndown,
+                          :stats]
   before_filter :find_project_by_project_id,
-                :only => [:index, :new, :create, :change_task_status, :burndown_index]
+                :only => [:index, :new, :create, :change_task_status, :burndown_index,
+                          :stats_index]
   before_filter :authorize
 
   helper :custom_fields
@@ -151,7 +154,9 @@ class SprintsController < ApplicationController
         if date <= Date.today
           efforts = []
           @sprint.issues.each do |issue|
-            efforts << issue.pending_efforts.last(:conditions => ["date <= ?", date])
+            if issue.use_in_burndown?
+              efforts << issue.pending_efforts.last(:conditions => ["date <= ?", date])
+            end
           end
           pending_effort = efforts.compact.collect{|effort| effort.effort}.compact.sum
         end
@@ -180,6 +185,105 @@ class SprintsController < ApplicationController
               :pending_effort_tooltip => l(:label_pending_effort_tooltip,
                                            :date => l(:label_end),
                                            :hours => last_pending_effort)}
+  end
+
+  def stats_index
+    if @project.last_sprint
+      redirect_to stats_sprint_path(@project.last_sprint)
+    else
+      render_error l(:error_no_sprints)
+    end
+  rescue
+    render_404
+  end
+
+  def stats
+    @days = []
+    @members_efforts = {}
+    @estimated_efforts_totals = {:days => {}, :total => 0.0}
+    @done_efforts_totals = {:days => {}, :total => 0.0}
+    ((@sprint.sprint_start_date)..(@sprint.sprint_end_date)).each do |date|
+      if @sprint.efforts.count(:conditions => ["date = ?", date]) > 0
+        @days << {:date => date, :label => "#{I18n.l(date, :format => :scrum_day)} #{date.day}"}
+        if User.current.allowed_to?(:view_sprint_stats_by_member, @project)
+          estimated_effort_conditions = ["date = ?", date]
+          done_effort_conditions = ["spent_on = ?", date]
+        else
+          estimated_effort_conditions = ["date = ? AND user_id = ?", date, User.current.id]
+          done_effort_conditions = ["spent_on = ? AND user_id = ?", date, User.current.id]
+        end
+        @sprint.efforts.all(:conditions => estimated_effort_conditions).each do |sprint_effort|
+          if sprint_effort.effort
+            init_members_efforts(@members_efforts, sprint_effort.user)
+            member_estimated_efforts_days = init_member_efforts_days(@members_efforts,
+                                                                     @sprint,
+                                                                     sprint_effort.user,
+                                                                     date,
+                                                                     true)
+            member_estimated_efforts_days[date] += sprint_effort.effort
+            @members_efforts[sprint_effort.user.id][:estimated_efforts][:total] += sprint_effort.effort
+            @estimated_efforts_totals[:days][date] = 0.0 unless @estimated_efforts_totals[:days].include?(date)
+            @estimated_efforts_totals[:days][date] += sprint_effort.effort
+            @estimated_efforts_totals[:total] += sprint_effort.effort
+          end
+        end
+        @project.time_entries.all(:conditions => done_effort_conditions).each do |time_entry|
+          if time_entry.hours
+            init_members_efforts(@members_efforts,
+                                 time_entry.user)
+            member_done_efforts_days = init_member_efforts_days(@members_efforts,
+                                                                @sprint,
+                                                                time_entry.user,
+                                                                date,
+                                                                false)
+            member_done_efforts_days[date] += time_entry.hours
+            @members_efforts[time_entry.user.id][:done_efforts][:total] += time_entry.hours
+            @done_efforts_totals[:days][date] = 0.0 unless @done_efforts_totals[:days].include?(date)
+            @done_efforts_totals[:days][date] += time_entry.hours
+            @done_efforts_totals[:total] += time_entry.hours
+          end
+        end
+      end
+    end
+    @members_efforts = @members_efforts.values.sort{|a, b| a[:member] <=> b[:member]}
+
+    @sps_by_pbi_category, @sps_by_pbi_category_total = @sprint.sps_by_pbi_category
+    @sps_by_pbi_category_chart = {:width => 400, :height => 400}
+
+    @sps_by_pbi_type, @sps_by_pbi_type_total = @sprint.sps_by_pbi_type
+    @sps_by_pbi_type_chart = {:width => 400, :height => 400}
+
+    @sps_by_pbi_creation_date, @sps_by_pbi_creation_date_total = @sprint.sps_by_pbi_creation_date
+    @sps_by_pbi_creation_date_chart = {:width => 400, :height => 400}
+
+    @effort_by_activity, @effort_by_activity_total = @sprint.time_entries_by_activity
+    @effort_by_activity_chart = {:width => 400, :height => 400}
+  end
+
+private
+
+  def init_members_efforts(members_efforts, member)
+    unless members_efforts.include?(member.id)
+      members_efforts[member.id] = {
+        :member => member,
+        :estimated_efforts => {
+          :days => {},
+          :total => 0.0
+        },
+        :done_efforts => {
+          :days => {},
+          :total => 0.0
+        }
+      }
+    end
+  end
+
+  def init_member_efforts_days(members_efforts, sprint, member, date, estimated)
+    member_efforts_days = members_efforts[member.id][estimated ? :estimated_efforts : :done_efforts][:days]
+    unless member_efforts_days.include?(date)
+      member_efforts_days[date] = 0.0
+    end
+    return member_efforts_days
   end
 
 end

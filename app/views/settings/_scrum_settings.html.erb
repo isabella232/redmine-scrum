@@ -11,39 +11,12 @@
     <%= select_tag "settings[story_points_custom_field_id]", options, :include_blank => true %>
   </p>
   <p>
-    <label><%= l(:label_setting_task_statuses) %>:</label>
-    <%- statuses = IssueStatus.all.collect{|s| [s.name, s.id]} -%>
-    <%- options = options_for_select(statuses, Scrum::Setting.task_status_ids) -%>
-    <%= select_tag "settings[task_status_ids]", options, :multiple => true %>
+    <label><%= l(:label_setting_blocked_custom_field) %>:</label>
+    <%- custom_fields = CustomField.find_all_by_type_and_field_format("IssueCustomField", ["bool"])
+        custom_fields = custom_fields.collect{|c| [c.name, c.id]}
+        options = options_for_select(custom_fields, Scrum::Setting.blocked_custom_field_id) -%>
+    <%= select_tag "settings[blocked_custom_field_id]", options, :include_blank => true %>
   </p>
-  <p>
-    <label><%= l(:label_setting_pbi_statuses) %>:</label>
-    <%- statuses = IssueStatus.all.collect{|s| [s.name, s.id]} -%>
-    <%- options = options_for_select(statuses, Scrum::Setting.pbi_status_ids) -%>
-    <%= select_tag "settings[pbi_status_ids]", options, :multiple => true %>
-  </p>
-  <p>
-    <label><%= l(:label_setting_verification_activities) %>:</label>
-    <%- activities = Enumeration.all(:conditions => {:type => "TimeEntryActivity"}).collect{|s| [s.name, s.id]} -%>
-    <%- options = options_for_select(activities, Scrum::Setting.verification_activity_ids) -%>
-    <%= select_tag "settings[verification_activity_ids]", options, :multiple => true %>
-  </p>
-  <p>
-    <label><%= l(:label_setting_create_journal_on_pbi_position_change) %>:</label>
-    <%= hidden_field_tag("settings[create_journal_on_pbi_position_change]", 0) %>
-    <%= check_box_tag("settings[create_journal_on_pbi_position_change]", 1,
-                      Scrum::Setting.create_journal_on_pbi_position_change) %>
-  </p>
-  <p>
-    <label><%= l(:label_setting_inherit_pbi_attributes) %>:</label>
-    <%= hidden_field_tag("settings[inherit_pbi_attributes]", 0) %>
-    <%= check_box_tag("settings[inherit_pbi_attributes]", 1,
-                      Scrum::Setting.inherit_pbi_attributes) %>
-  </p>
-</fieldset>
-
-<fieldset>
-  <legend><%= l(:label_tracker_plural) %></legend>
   <%- trackers = Tracker.all.collect{|t| [t.name, t.id]} -%>
   <p>
     <label><%= l(:label_pbi_plural) %>:</label>
@@ -56,15 +29,18 @@
     <%= select_tag "settings[task_tracker_ids]", options, :multiple => true %>
   </p>
   <%- Tracker.all.each do |tracker| -%>
-    <p>
-      <label><%= l(:label_setting_fields_on_tracker, :tracker => tracker.name) %></label>
-      <%- fields = tracker.core_fields.collect{|f| [l("field_#{f}".sub(/_id$/, "")), f]}
-          options = options_for_select(fields, Scrum::Setting.tracker_fields(tracker.id)) -%>
-      <%= select_tag "settings[tracker_#{tracker.id}_fields]", options, :multiple => true %>
-      <%- custom_fields = tracker.custom_fields.collect{|f| [f.name, f.id]}
-          options = options_for_select(custom_fields, Scrum::Setting.tracker_custom_fields(tracker.id)) -%>
-      <%= select_tag "settings[tracker_#{tracker.id}_custom_fields]", options, :multiple => true %>
-    </p>
+    <%- if Scrum::Setting.pbi_tracker_ids.include?(tracker.id) or
+           Scrum::Setting.task_tracker_ids.include?(tracker.id) -%>
+      <p>
+        <label><%= l(:label_setting_fields_on_tracker, :tracker => tracker.name) %></label>
+        <%- fields = tracker.core_fields.collect{|f| [l("field_#{f}".sub(/_id$/, "")), f]}
+            options = options_for_select(fields, Scrum::Setting.tracker_fields(tracker.id)) -%>
+        <%= select_tag "settings[tracker_#{tracker.id}_fields]", options, :multiple => true %>
+        <%- custom_fields = tracker.custom_fields.collect{|f| [f.name, f.id]}
+            options = options_for_select(custom_fields, Scrum::Setting.tracker_fields(tracker.id, Scrum::Setting::TrackerFields::CUSTOM_FIELDS)) -%>
+        <%= select_tag "settings[tracker_#{tracker.id}_custom_fields]", options, :multiple => true %>
+      </p>
+    <%- end -%>
   <%- end -%>
 </fieldset>
 
@@ -99,10 +75,111 @@
       <span class="post-it settings-post-it <%= color_css_class %>">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
     <%- end -%>
   </p>
+  <p>
+    <label><%= l(:label_blocked) %>:</label>
+    <%- colors.each_pair do |color_id, color_css_class| -%>
+      <%- selected = (color_css_class == Scrum::Setting.blocked_color) -%>
+      <%= radio_button_tag("settings[blocked_color]", color_css_class, selected) %>
+      <span class="post-it settings-post-it <%= color_css_class %>">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    <%- end -%>
+  </p>
 </fieldset>
 
 <fieldset>
-  <legend><%= l(:label_pbi_post_it) %></legend>
+  <legend><%= l(:label_sprint_board) %></legend>
+  <p>
+    <label><%= l(:label_setting_task_statuses) %>:</label>
+    <%- statuses = IssueStatus.all.collect{|s| [s.name, s.id]} -%>
+    <%- options = options_for_select(statuses, Scrum::Setting.task_status_ids) -%>
+    <%= select_tag "settings[task_status_ids]", options, :multiple => true %>
+  </p>
+  <p>
+    <label><%= l(:label_setting_pbi_statuses) %>:</label>
+    <%- statuses = IssueStatus.all.collect{|s| [s.name, s.id]} -%>
+    <%- options = options_for_select(statuses, Scrum::Setting.pbi_status_ids) -%>
+    <%= select_tag "settings[pbi_status_ids]", options, :multiple => true %>
+  </p>
+  <p>
+    <label><%= l(:label_setting_verification_activities) %>:</label>
+    <%- activities = Enumeration.all(:conditions => {:type => "TimeEntryActivity"}).collect{|s| [s.name, s.id]} -%>
+    <%- options = options_for_select(activities, Scrum::Setting.verification_activity_ids) -%>
+    <%= select_tag "settings[verification_activity_ids]", options, :multiple => true %>
+  </p>
+  <p>
+    <label><%= l(:label_setting_inherit_pbi_attributes) %>:</label>
+    <%= hidden_field_tag("settings[inherit_pbi_attributes]", 0) %>
+    <%= check_box_tag("settings[inherit_pbi_attributes]", 1,
+                      Scrum::Setting.inherit_pbi_attributes) %>
+  </p>
+  <p>
+    <label>
+      <%= image_tag(ScrumHelper::MAJOR_DEVIATION_ICON) %>
+      <%= l(:label_setting_major_deviation_ratio) %>:
+    </label>
+    <%= text_field_tag("settings[major_deviation_ratio]",
+                       Scrum::Setting.major_deviation_ratio) %>
+  </p>
+  <p>
+    <label>
+      <%= image_tag(ScrumHelper::MINOR_DEVIATION_ICON) %>
+      <%= l(:label_setting_minor_deviation_ratio) %>:
+    </label>
+    <%= text_field_tag("settings[minor_deviation_ratio]",
+                       Scrum::Setting.minor_deviation_ratio) %>
+  </p>
+  <p>
+    <label>
+      <%= image_tag(ScrumHelper::BELOW_DEVIATION_ICON) %>
+      <%= l(:label_setting_below_deviation_ratio) %>:
+    </label>
+    <%= text_field_tag("settings[below_deviation_ratio]",
+                       Scrum::Setting.below_deviation_ratio) %>
+  </p>
+  <p>
+    <label><%= l(:label_setting_render_pbis_deviations) %>:</label>
+    <%= hidden_field_tag("settings[render_pbis_deviations]", 0) %>
+    <%= check_box_tag("settings[render_pbis_deviations]", 1,
+                      Scrum::Setting.render_pbis_deviations) %>
+  </p>
+  <p>
+    <label><%= l(:label_setting_render_tasks_deviations) %>:</label>
+    <%= hidden_field_tag("settings[render_tasks_deviations]", 0) %>
+    <%= check_box_tag("settings[render_tasks_deviations]", 1,
+                      Scrum::Setting.render_tasks_deviations) %>
+  </p>
+  <%- Tracker.all.each do |tracker| -%>
+    <%- if Scrum::Setting.pbi_tracker_ids.include?(tracker.id) or
+           Scrum::Setting.task_tracker_ids.include?(tracker.id) -%>
+      <p>
+        <label><%= l(:label_setting_sprint_board_fields_on_tracker, :tracker => tracker.name) %></label>
+        <%- fields = Scrum::Setting.sprint_board_fields_for_tracker(tracker)
+            fields.collect!{|f| [l("field_#{f}".sub(/_id$/, "")), f]}
+            values = Scrum::Setting.tracker_fields(tracker.id, Scrum::Setting::TrackerFields::SPRINT_BOARD_FIELDS)
+            options = options_for_select(fields, values) -%>
+        <%= select_tag("settings[tracker_#{tracker.id}_sprint_board_fields]", options, :multiple => true) %>
+        <%- custom_fields = Scrum::Setting.tracker_fields(tracker.id, Scrum::Setting::TrackerFields::CUSTOM_FIELDS).collect{|f| [CustomField.find(f).name, CustomField.find(f).id]}
+            values = Scrum::Setting.tracker_fields(tracker.id, Scrum::Setting::TrackerFields::SPRINT_BOARD_CUSTOM_FIELDS)
+            options = options_for_select(custom_fields, values) -%>
+        <%= select_tag("settings[tracker_#{tracker.id}_sprint_board_custom_fields]", options, :multiple => true) %>
+      </p>
+    <%- end -%>
+  <%- end -%>
+</fieldset>
+
+<fieldset>
+  <legend><%= l(:label_product_backlog) %></legend>
+  <p>
+    <label><%= l(:label_setting_create_journal_on_pbi_position_change) %>:</label>
+    <%= hidden_field_tag("settings[create_journal_on_pbi_position_change]", 0) %>
+    <%= check_box_tag("settings[create_journal_on_pbi_position_change]", 1,
+                      Scrum::Setting.create_journal_on_pbi_position_change) %>
+  </p>
+  <p>
+    <label><%= l(:label_setting_check_dependencies_on_pbi_sorting) %>:</label>
+    <%= hidden_field_tag("settings[check_dependencies_on_pbi_sorting]", 0) %>
+    <%= check_box_tag("settings[check_dependencies_on_pbi_sorting]", 1,
+                      Scrum::Setting.check_dependencies_on_pbi_sorting) %>
+  </p>
   <p>
     <label><%= l(:label_setting_render_position_on_pbi) %>:</label>
     <%= hidden_field_tag("settings[render_position_on_pbi]", 0) %>
@@ -136,20 +213,11 @@
 </fieldset>
 
 <fieldset>
-  <legend><%= l(:label_product_backlog) %></legend>
-  <p>
-    <label><%= l(:label_setting_check_dependencies_on_pbi_sorting) %>:</label>
-    <%= hidden_field_tag("settings[check_dependencies_on_pbi_sorting]", 0) %>
-    <%= check_box_tag("settings[check_dependencies_on_pbi_sorting]", 1,
-                      Scrum::Setting.check_dependencies_on_pbi_sorting) %>
-  </p>
-</fieldset>
-
-<fieldset>
   <legend><%= l(:label_product_backlog_burndown_chart) %></legend>
   <p>
     <label><%= l(:label_setting_product_burndown_sprints) %>:</label>
-    <%= text_field_tag("settings[product_burndown_sprints]", Scrum::Setting.product_burndown_sprints) %>
+    <%= text_field_tag("settings[product_burndown_sprints]",
+                       Scrum::Setting.product_burndown_sprints) %>
   </p>
 </fieldset>
 

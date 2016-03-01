@@ -15,9 +15,11 @@ resources :projects do
       put :update_effort
       get :burndown
       get :burndown_graph
+      get :stats
     end
     collection do
       get :burndown_index
+      get :stats_index
     end
   end
   post "sprints/change_task_status",
@@ -73,6 +75,9 @@ get "scrum/:pbi_id/edit_pbi",
 post "scrum/:pbi_id/update_pbi",
      :controller => :scrum, :action => :update_pbi,
      :as => :update_pbi
+get "scrum/:pbi_id/move/:position",
+    :controller => :scrum, :action => :move_pbi,
+    :as => :move_pbi
 get "scrum/:id/edit_task",
     :controller => :scrum, :action => :edit_task,
     :as => :edit_task

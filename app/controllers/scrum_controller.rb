@@ -7,13 +7,13 @@
 
 class ScrumController < ApplicationController
 
-  menu_item :scrum
+  menu_item :product_backlog
 
   before_filter :find_issue, :only => [:change_story_points, :change_pending_effort,
                                        :change_assigned_to, :create_time_entry,
                                        :edit_task, :update_task]
   before_filter :find_sprint, :only => [:new_pbi, :create_pbi]
-  before_filter :find_pbi, :only => [:new_task, :create_task, :edit_pbi, :update_pbi,
+  before_filter :find_pbi, :only => [:new_task, :create_task, :edit_pbi, :update_pbi, :move_pbi,
                                      :move_to_last_sprint, :move_to_product_backlog]
   before_filter :find_project_by_project_id, :only => [:release_plan]
   before_filter :authorize, :except => [:new_pbi, :create_pbi, :new_task, :create_task]
@@ -62,7 +62,7 @@ class ScrumController < ApplicationController
     @pbi.tracker = @project.trackers.find(params[:tracker_id])
     @pbi.author = User.current
     @pbi.sprint = @sprint
-    @top = !(params[:top].nil?)
+    @top = true unless params[:top].nil? or (params[:top] == "false") 
     respond_to do |format|
       format.html
       format.js
@@ -108,6 +108,26 @@ class ScrumController < ApplicationController
     end
     respond_to do |format|
       format.js
+    end
+  end
+
+  def move_pbi
+    begin
+      @position = params[:position]
+      case params[:position]
+        when "top", "bottom"
+          @pbi.move_pbi_to(@position)
+        when "before"
+          @other_pbi = params[:before_other_pbi]
+          @pbi.move_pbi_to(@position, @other_pbi)
+        when "after"
+          @other_pbi = params[:after_other_pbi]
+          @pbi.move_pbi_to(@position, @other_pbi)
+        else
+          raise "Invalid position: #{@position.inspect}"
+      end
+    rescue Exception => @exception
+      logger.error("Exception: #{@exception.inspect}")
     end
   end
 
@@ -197,46 +217,49 @@ class ScrumController < ApplicationController
 
   def release_plan
     @sprints = []
-    @story_points_per_sprint, @sprints_count = @project.story_points_per_sprint
+    velocity_all_pbis, velocity_scheduled_pbis, @sprints_count = @project.story_points_per_sprint
+    @velocity_type = params[:velocity_type] || "only_scheduled"
+    case @velocity_type
+      when "all"
+        @velocity = velocity_all_pbis
+      when "only_scheduled"
+        @velocity = velocity_scheduled_pbis
+      else
+        @velocity = params[:custom_velocity].to_f unless params[:custom_velocity].blank?
+    end
+    @velocity = 1.0 if @velocity.blank? or @velocity < 1.0
     @total_story_points = 0.0
     @pbis_with_estimation = 0
     @pbis_without_estimation = 0
-    last_sprint = nil
     versions = {}
+    accumulated_story_points = @velocity
+    current_sprint = {:pbis => [], :story_points => 0.0, :versions => []}
     if @project.product_backlog
       @project.product_backlog.pbis.each do |pbi|
         if pbi.story_points
           @pbis_with_estimation += 1
           story_points = pbi.story_points.to_f
           @total_story_points += story_points
-          accumulated_story_points = 0.0
-          begin
-            if last_sprint && last_sprint[:story_points] + story_points > @story_points_per_sprint
-              @sprints << last_sprint
-              last_sprint = nil
-            end
-            if last_sprint.nil?
-              last_sprint = {:pbis => [], :story_points => 0.0, :versions => []}
-            end
-            if story_points <= @story_points_per_sprint
-              last_sprint[:pbis] << pbi
-              last_sprint[:story_points] += accumulated_story_points + story_points
-              if pbi.fixed_version
-                versions[pbi.fixed_version.id] = {:version => pbi.fixed_version, :sprint => @sprints.count}
-              end
-            else
-              accumulated_story_points += @story_points_per_sprint
-            end
-            story_points -= @story_points_per_sprint
-          end while story_points > 0.0
+          while accumulated_story_points < story_points
+            @sprints << current_sprint
+            accumulated_story_points += @velocity
+            current_sprint = {:pbis => [], :story_points => 0.0, :versions => []}
+          end
+          accumulated_story_points -= story_points
+          current_sprint[:pbis] << pbi
+          current_sprint[:story_points] += story_points
+          if pbi.fixed_version
+            versions[pbi.fixed_version.id] = {:version => pbi.fixed_version,
+                                              :sprint => @sprints.count}
+          end
         else
           @pbis_without_estimation += 1
         end
       end
-      if last_sprint
-        @sprints << last_sprint
+      if current_sprint and (current_sprint[:pbis].count > 0)
+        @sprints << current_sprint
       end
-      versions.each_pair do |id, info|
+      versions.values.each do |info|
         @sprints[info[:sprint]][:versions] << info[:version]
       end
     end
@@ -287,7 +310,7 @@ private
     issue.assigned_to_id = params[:issue][:assigned_to_id] unless params[:issue][:assigned_to_id].nil?
     issue.subject = params[:issue][:subject] unless params[:issue][:subject].nil?
     issue.priority_id = params[:issue][:priority_id] unless params[:issue][:priority_id].nil?
-    issue.estimated_hours = params[:issue][:estimated_hours] unless params[:issue][:estimated_hours].nil?
+    issue.estimated_hours = params[:issue][:estimated_hours].gsub(",", ".") unless params[:issue][:estimated_hours].nil?
     issue.description = params[:issue][:description] unless params[:issue][:description].nil?
     issue.category_id = params[:issue][:category_id] if issue.safe_attribute?(:category_id) and (!(params[:issue][:category_id].nil?))
     issue.fixed_version_id = params[:issue][:fixed_version_id] if issue.safe_attribute?(:fixed_version_id) and (!(params[:issue][:fixed_version_id].nil?))

@@ -12,6 +12,7 @@ if (Rails.env == "development")
   ActiveSupport::Dependencies.autoload_once_paths.reject!{|x| x =~ /^#{Regexp.escape(File.dirname(__FILE__))}/}
 end
 
+ApplicationHelper.send(:include, Scrum::ApplicationHelperPatch)
 Issue.send(:include, Scrum::IssuePatch)
 IssueQuery.send(:include, Scrum::IssueQueryPatch)
 IssuesController.send(:include, Scrum::IssuesControllerPatch)
@@ -29,7 +30,7 @@ Redmine::Plugin.register :scrum do
   name              "Scrum Redmine plugin"
   author            "Emilio González Montaña"
   description       "This plugin for Redmine allows to follow Scrum methodology with Redmine projects"
-  version           "0.9.1"
+  version           "0.10.0"
   url               "https://redmine.ociotec.com/projects/redmine-plugin-scrum"
   author_url        "http://ociotec.com"
   requires_redmine  :version_or_higher => "2.3.0"
@@ -48,13 +49,18 @@ Redmine::Plugin.register :scrum do
                     :require => :member
     permission      :view_sprint_burndown,
                     {:sprints => [:burndown_index, :burndown]}
-    permission      :view_sprint_stats, {}
+    permission      :view_sprint_stats, {:sprints => [:stats_index, :stats]}
     permission      :view_sprint_stats_by_member, {}
     permission      :view_product_backlog,
                     {:product_backlog => [:index, :check_dependencies]}
     permission      :edit_product_backlog,
-                    {:product_backlog => [:sort, :new_pbi, :create_pbi],
-                     :scrum => [:edit_pbi, :update_pbi, :move_to_last_sprint, :move_to_product_backlog]},
+                    {:product_backlog => [:new_pbi, :create_pbi],
+                     :scrum => [:edit_pbi, :update_pbi, :move_to_last_sprint,
+                                :move_to_product_backlog]},
+                    :require => :member
+    permission      :sort_product_backlog,
+                    {:product_backlog => [:sort],
+                     :scrum => [:move_pbi]},
                     :require => :member
     permission      :view_product_backlog_burndown,
                     {:product_backlog => [:burndown]}
@@ -62,15 +68,19 @@ Redmine::Plugin.register :scrum do
                     {:scrum => [:release_plan]}
   end
 
-  menu              :project_menu, :scrum, {:controller => :sprints, :action => :index},
-                    :caption => :label_scrum, :after => :activity, :param => :project_id
+  menu              :project_menu, :product_backlog, {:controller => :product_backlog, :action => :index},
+                    :caption => :label_menu_product_backlog, :after => :activity, :param => :project_id
+  menu              :project_menu, :sprint, {:controller => :sprints, :action => :index},
+                    :caption => :label_menu_sprint, :after => :activity, :param => :project_id
 
   settings          :default => {:create_journal_on_pbi_position_change => "0",
                                  :doer_color => "post-it-color-5",
                                  :pbi_status_ids => [],
                                  :pbi_tracker_ids => [],
                                  :reviewer_color => "post-it-color-3",
+                                 :blocked_color => "post-it-color-6",
                                  :story_points_custom_field_id => nil,
+                                 :blocked_custom_field_id => nil,
                                  :task_status_ids => [],
                                  :task_tracker_ids => [],
                                  :verification_activity_ids => [],
@@ -81,6 +91,11 @@ Redmine::Plugin.register :scrum do
                                  :render_author_on_pbi => "1",
                                  :render_updated_on_pbi => "0",
                                  :check_dependencies_on_pbi_sorting => "0",
-                                 :product_burndown_sprints => "4"},
+                                 :product_burndown_sprints => "4",
+                                 :render_pbis_deviations => "1",
+                                 :render_tasks_deviations => "1",
+                                 :major_deviation_ratio => 150,
+                                 :minor_deviation_ratio => 120,
+                                 :below_deviation_ratio => 70},
                     :partial => "settings/scrum_settings"
 end

@@ -1,7 +1,8 @@
 <%- pbi_id = "pbi_#{pbi.id}" -%>
 
 <li id="<%= pbi_id %>"
-    class="<%= pbi.post_it_css_class(:small_rotate => true, :small_scale => true, :draggable => !read_only) %>">
+    class="<%= pbi.post_it_css_class(:small_rotate => true, :small_scale => true,
+                                     :draggable => User.current.allowed_to?(:sort_product_backlog, project)) %>">
   <table>
     <tr>
       <td class="header-1">
@@ -16,17 +17,23 @@
                      :locals => {:project => project, :pbi => pbi, :read_only => read_only} %>
         <%- end -%>
       </td>
-      <td class="story-points-legend" rowspan="2">
-        <%- if pbi.has_story_points? -%>
-          <span title="<%= l(:label_story_point_plural) %>"><%= l(:label_story_point_unit) %></span>
-        <%- end -%>
-      </td>
-      <%- if User.current.allowed_to?(:edit_product_backlog, project) and 
+      <%- if User.current.allowed_to?(:edit_product_backlog, project) and
              User.current.allowed_to?(:edit_issues, project) and
              pbi.editable? and !read_only -%>
-        <td class="story-points-legend" rowspan="2">
+        <td rowspan="2">
           <%= link_to "", edit_pbi_path(pbi),
                       :remote => true, :method => "GET", :class => "icon icon-edit" %>
+        </td>
+      <%- end -%>
+      <%- if User.current.allowed_to?(:sort_product_backlog, project) and
+             User.current.allowed_to?(:edit_issues, project) and
+             pbi.editable? and !read_only -%>
+        <td rowspan="2">
+          <%= link_to "", move_pbi_path(pbi, :top),
+                      :remote => true, :method => "GET", :class => "icon icon-move-top" %>
+          <br />
+          <%= link_to "", move_pbi_path(pbi, :bottom),
+                      :remote => true, :method => "GET", :class => "icon icon-move-bottom" %>
         </td>
       <%- end -%>
     </tr>

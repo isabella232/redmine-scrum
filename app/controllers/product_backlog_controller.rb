@@ -7,7 +7,7 @@
 
 class ProductBacklogController < ApplicationController
 
-  menu_item :scrum
+  menu_item :product_backlog
   model_object Issue
 
   before_filter :find_project_by_project_id,
@@ -78,26 +78,34 @@ class ProductBacklogController < ApplicationController
     @data = []
     @project.sprints.each do |sprint|
       @data << {:axis_label => sprint.name,
-                :story_points => sprint.story_points,
+                :story_points => sprint.story_points.round(2),
                 :pending_story_points => 0}
     end
-
-    @story_points_per_sprint, @sprints_count = @project.story_points_per_sprint
+    velocity_all_pbis, velocity_scheduled_pbis, @sprints_count = @project.story_points_per_sprint
+    @velocity_type = params[:velocity_type] || "only_scheduled"
+    case @velocity_type
+      when "all"
+        @velocity = velocity_all_pbis
+      when "only_scheduled"
+        @velocity = velocity_scheduled_pbis
+      else
+        @velocity = params[:custom_velocity].to_f unless params[:custom_velocity].blank?
+    end
+    @velocity = 1.0 if @velocity.blank? or @velocity < 1.0
     pending_story_points = @project.product_backlog.story_points
     new_sprints = 1
     while pending_story_points > 0
       @data << {:axis_label => "#{l(:field_sprint)} +#{new_sprints}",
-                :story_points => ((@story_points_per_sprint <= pending_story_points) ? 
-                                  @story_points_per_sprint : pending_story_points).round(2),
+                :story_points => ((@velocity <= pending_story_points) ?
+                    @velocity : pending_story_points).round(2),
                 :pending_story_points => 0}
-      pending_story_points -= @story_points_per_sprint
+      pending_story_points -= @velocity
       new_sprints += 1
     end
-
     for i in 0..(@data.length - 1)
       others = @data[(i + 1)..(@data.length - 1)]
-      @data[i][:pending_story_points] = @data[i][:story_points] +
-        (others.blank? ? 0 : others.collect{|other| other[:story_points]}.sum)
+      @data[i][:pending_story_points] = (@data[i][:story_points] +
+        (others.blank? ? 0 : others.collect{|other| other[:story_points]}.sum)).round(2)
       @data[i][:story_points_tooltip] = l(:label_pending_story_points,
                                           :pending_story_points => @data[i][:pending_story_points],
                                           :sprint => @data[i][:axis_label],

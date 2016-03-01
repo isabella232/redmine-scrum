@@ -1,7 +1,7 @@
 <table class="box attributes">
-  <tr>
-    <td>
-      <%= l(:label_sps_per_sprint_stat, :count => count, :sps => sps) %>
-    </td>
-  </tr>
+  <%= render :partial => "scrum/velocity_form",
+             :locals => {:url => burndown_project_product_backlog_index_path(@project),
+                         :sprints_count => @sprints_count,
+                         :velocity => @velocity,
+                         :velocity_type => @velocity_type} %>
 </table>

@@ -10,7 +10,14 @@
           <%= link_to "", edit_task_path(task),
                       :remote => true, :method => "GET", :class => "icon icon-edit float-icon" %>
         <%- end -%>
-        <%= link_to_issue(task, :tracker => false, :truncate => 100) %>
+        <%= render_issue_icons(task) %>
+        <%= render :partial => "post_its/sprint_board/fields", :formats => [:html],
+                   :locals => {:project => project, :issue => task} %>
+        <div>
+          <%= link_to_issue(task, :tracker => false, :truncate => 100) %>
+        </div>
+        <%= render :partial => "post_its/sprint_board/custom_fields", :formats => [:html],
+                   :locals => {:project => project, :issue => task} %>
         <div class="doers-reviewers-post-its-container">
           <%- task.doers.each do |doer| -%>
             <div class="<%= Issue.doer_post_it_css_class %>">
@@ -20,6 +27,11 @@
           <%- task.reviewers.each do |reviewer| -%>
             <div class="<%= Issue.reviewer_post_it_css_class %>">
               <%= avatar(reviewer, :size => "14") %> <%= link_to_user reviewer %>
+            </div>
+          <%- end -%>
+          <%- if task.blocked? -%>
+            <div class="<%= Issue.blocked_post_it_css_class %>">
+              <%= l :label_blocked %>
             </div>
           <%- end -%>
         </div>
@@ -41,7 +53,6 @@
     <td class="pending">
       <%= render :partial => "common/scrum_pending_effort", :formats => [:html],
                  :locals => {:project => project, :task => task} %>
-      <span title="<%= l(:field_pending_effort) %>">h</span>
     </td>
   </tr>
 </table>

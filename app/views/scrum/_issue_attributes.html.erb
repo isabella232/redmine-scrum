@@ -69,11 +69,9 @@
   <%- end -%>
 
   <%- issue.editable_custom_field_values.each do |value| -%>
-    <%- if issue.custom_field?(value.custom_field) -%>
-      <p>
-        <%= custom_field_tag_with_label :issue, value, :required => value.custom_field.is_required %>
-      </p>
-    <%- end -%>
+    <p>
+      <%= custom_field_tag_with_label :issue, value, :required => value.custom_field.is_required %>
+    </p>
   <%- end -%>
 
   <%- if issue.safe_attribute?(:description) -%>

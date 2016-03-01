@@ -14,6 +14,14 @@
 	background-image: url(../images/icon-release-plan-16.png);
 }
 
+.icon-move-top {
+    background-image: url(../images/icon-move-top-16.png);
+}
+
+.icon-move-bottom {
+    background-image: url(../images/icon-move-bottom-16.png);
+}
+
 .float-icon {
 	float: right;
 	min-height: 16px;
@@ -172,6 +180,11 @@
 	cursor: ns-resize;
 }
 
+.post-it-legend {
+    font-style: italic;
+    font-size: 80%;
+}
+
 ul.pbis {
 	padding: 0px;
 	width: 95%;
@@ -207,11 +220,18 @@ ul.pbis li table tr td.header-2 {
 	text-align: right;
 }
 
+ul.pbis li table tr td.story-points {
+    width: 8em;
+    min-width: 8em;
+    font-style: italic;
+    color: darkgrey;
+}
+
 ul.pbis li table tr td.story-points input {
-	font-size: 2em;
-	font-style: bold;
-	text-align: right;
-	min-width: 3em;
+    font-size: 2em;
+    font-style: bold;
+    text-align: right;
+    min-width: 3em;
 }
 
 ul.pbis li table tr td.story-points-legend {
@@ -235,18 +255,19 @@ table.sprint-board tr.sprint-board {
 	vertical-align: top;
 }
 
+table.sprint-board tr.sprint-board th.sprint-board,
+table.sprint-board tr.sprint-board td.sprint-board {
+    min-width: 13em;
+    padding-left: 0.8em;
+    padding-top: 0.8em;
+}
+
 table.sprint-board tr.sprint-board th.sprint-board {
 	border-bottom: 0.5em solid darkgrey;
-	min-width: 13em;
-	padding-left: 0.8em;
-	padding-top: 0.8em;
 }
 
 table.sprint-board tr.sprint-board td.sprint-board {
 	border: 0.5em solid darkgrey;
-	min-width: 13em;
-	padding-left: 0.8em;
-	padding-top: 0.8em;
 }
 
 table.sprint-pbi, table.sprint-task {
@@ -302,7 +323,7 @@ table.sprint-pbi tr td.pending, table.sprint-task tr td.pending {
 
 table.sprint-pbi input, table.sprint-task input {
 	text-align: right;
-	width: 3em;
+	width: 2em;
 }
 
 .editable-time {
@@ -320,7 +341,7 @@ table.sprint-pbi input, table.sprint-task input {
 	max-width: 9em;
 }
 
-.doer-post-it, .reviewer-post-it {
+.doer-post-it, .reviewer-post-it, .blocked-post-it {
 	height: 1.3em;
 	font-size: 0.8em;
 	margin-top: 2px;
@@ -331,6 +352,9 @@ table.sprint-pbi input, table.sprint-task input {
 }
 
 .reviewer-post-it {
+}
+
+.blocked-post-it {
 }
 
 .post-it .gravatar {
@@ -420,3 +444,48 @@ table.sprint-pbi input, table.sprint-task input {
   width: 820px;
   height: 580px;
 }
+
+table.scrum-stats-table {
+  width: 90%;
+  margin-left: 5%;
+  margin-right: 5%;
+  border-collapse: collapse;
+}
+
+table.scrum-stats-table tbody tr.double-row:nth-child(4n+0),
+table.scrum-stats-table tbody tr.double-row:nth-child(4n+3),
+table.scrum-stats-table thead tr.double-row {
+  background: #B8D1F3;
+}
+
+table.scrum-stats-table tbody tr.double-row:nth-child(4n+1),
+table.scrum-stats-table tbody tr.double-row:nth-child(4n+2) {
+  background: #DAE5F4;
+}
+
+table.scrum-stats-table tbody tr:nth-child(2n+0),
+table.scrum-stats-table thead tr {
+  background: #B8D1F3;
+}
+
+table.scrum-stats-table tbody tr:nth-child(2n+1) {
+  background: #DAE5F4;
+}
+
+table.scrum-stats-table tbody tr td.total {
+  font-weight: bold;
+}
+
+table.scrum-stats-table tbody tr td.comment {
+  font-style: italic;
+  font-color: grey;
+  font-size: 80%;
+}
+
+table.scrum-stats-chart-table {
+  width: 90%;
+  margin-left: 5%;
+  margin-right: 5%;
+  border-collapse: collapse;
+}
+

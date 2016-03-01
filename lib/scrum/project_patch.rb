@@ -19,18 +19,29 @@ module Scrum
           i = self.sprints.length - 1
           sprints_count = 0
           story_points_per_sprint = 0.0
+          scheduled_story_points_per_sprint = 0.0
           while (sprints_count < Scrum::Setting.product_burndown_sprints and i >= 0)
             story_points = self.sprints[i].story_points
-            if story_points > 0.0
+            scheduled_story_points = self.sprints[i].scheduled_story_points
+            unless story_points.nil? or scheduled_story_points.nil?
               story_points_per_sprint += story_points
+              scheduled_story_points_per_sprint += scheduled_story_points
               sprints_count += 1
             end
             i -= 1
           end
-          story_points_per_sprint /= sprints_count if story_points_per_sprint > 0 and sprints_count > 0
-          story_points_per_sprint = 1 if story_points_per_sprint == 0
-          story_points_per_sprint = story_points_per_sprint.round(2)
-          return [story_points_per_sprint, sprints_count]
+          story_points_per_sprint = filter_story_points(story_points_per_sprint, sprints_count)
+          scheduled_story_points_per_sprint = filter_story_points(scheduled_story_points_per_sprint, sprints_count)
+          return [story_points_per_sprint, scheduled_story_points_per_sprint, sprints_count]
+        end
+
+      private
+
+        def filter_story_points(story_points, sprints_count)
+          story_points /= sprints_count if story_points > 0 and sprints_count > 0
+          story_points = 1 if story_points == 0
+          story_points = story_points.round(2)
+          return story_points
         end
 
       end

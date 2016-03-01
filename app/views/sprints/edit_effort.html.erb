@@ -43,7 +43,7 @@
                                                                       @sprint.sprint_start_date + day) -%>
                 <%= text_field_tag "user[#{member.user.id}][#{day}]",
                                    effort.nil? ? nil : effort.effort,
-                                   :size => 2 %>
+                                   :size => 3 %>
               </td>
             <%- end -%>
           </tr>
