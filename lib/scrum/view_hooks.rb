@@ -12,6 +12,7 @@ module Scrum
     render_on(:view_issues_form_details_bottom,      :partial => "scrum_hooks/issues/form")
     render_on(:view_issues_show_details_bottom,      :partial => "scrum_hooks/issues/show")
     render_on(:view_layouts_base_html_head,          :partial => "scrum_hooks/head")
+    render_on(:view_layouts_base_sidebar,            :partial => "scrum_hooks/scrum_tips")
 
   end
 end

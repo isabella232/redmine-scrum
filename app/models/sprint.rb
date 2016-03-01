@@ -153,6 +153,34 @@ class Sprint < ActiveRecord::Base
     return results, total
   end
 
+  def efforts_by_member_and_activity
+    results = {}
+    if User.current.allowed_to?(:view_sprint_stats_by_member, project)
+      members = Set.new
+      time_entries.each do |time_entry|
+        if time_entry.activity and time_entry.hours > 0.0 and
+            time_entry.spent_on >= sprint_start_date and time_entry.spent_on <= sprint_end_date
+          activity = time_entry.activity.name
+          member = time_entry.user.name
+          if !results.key?(activity)
+            results[activity] = {}
+          end
+          if !results[activity].key?(member)
+            results[activity][member] = 0.0
+          end
+          results[activity][member] += time_entry.hours
+          members << member
+        end
+      end
+      results.values.each do |data|
+        members.each do |member|
+          data[member] = 0.0 unless data.key?(member)
+        end
+      end
+    end
+    return results
+  end
+
   def sps_by_pbi_category
     return sps_by_pbi_field(:category_id, nil, :category, :name, nil, nil)
   end

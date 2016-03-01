@@ -22,9 +22,26 @@
     background-image: url(../images/icon-move-bottom-16.png);
 }
 
+.icon-major-deviation {
+	background-image: url(../../../images/exclamation.png);
+}
+
+.icon-minor-deviation {
+	background-image: url(../../../images/warning.png);
+}
+
+.icon-below-deviation {
+	background-image: url(../../../images/lightning.png);
+}
+
+.icon-log-time {
+	background-image: url(../../../images/time_add.png);
+}
+
 .float-icon {
 	float: right;
-	min-height: 16px;
+	min-height: 10px;
+	padding-left: 16px;
 }
 
 .post-it, .post-it input {
@@ -435,57 +452,60 @@ table.sprint-pbi input, table.sprint-task input {
 }
 
 .modal-issue-menu {
-  text-align: right;
-  margin-bottom: 0.5em;
-  font-size: 0.9em;
+	text-align: right;
+	margin-bottom: 0.5em;
+	font-size: 0.9em;
 }
 
 #licenseIframe {
-  width: 820px;
-  height: 580px;
+	width: 820px;
+	height: 580px;
 }
 
 table.scrum-stats-table {
-  width: 90%;
-  margin-left: 5%;
-  margin-right: 5%;
-  border-collapse: collapse;
+	width: 90%;
+	margin-left: 5%;
+	margin-right: 5%;
+	border-collapse: collapse;
 }
 
 table.scrum-stats-table tbody tr.double-row:nth-child(4n+0),
 table.scrum-stats-table tbody tr.double-row:nth-child(4n+3),
 table.scrum-stats-table thead tr.double-row {
-  background: #B8D1F3;
+	background: #B8D1F3;
 }
 
 table.scrum-stats-table tbody tr.double-row:nth-child(4n+1),
 table.scrum-stats-table tbody tr.double-row:nth-child(4n+2) {
-  background: #DAE5F4;
+	background: #DAE5F4;
 }
 
 table.scrum-stats-table tbody tr:nth-child(2n+0),
 table.scrum-stats-table thead tr {
-  background: #B8D1F3;
+	background: #B8D1F3;
 }
 
 table.scrum-stats-table tbody tr:nth-child(2n+1) {
-  background: #DAE5F4;
+	background: #DAE5F4;
 }
 
 table.scrum-stats-table tbody tr td.total {
-  font-weight: bold;
+	font-weight: bold;
 }
 
 table.scrum-stats-table tbody tr td.comment {
-  font-style: italic;
-  font-color: grey;
-  font-size: 80%;
+	font-style: italic;
+	font-color: grey;
+	font-size: 80%;
 }
 
 table.scrum-stats-chart-table {
-  width: 90%;
-  margin-left: 5%;
-  margin-right: 5%;
-  border-collapse: collapse;
+	width: 90%;
+	margin-left: 5%;
+	margin-right: 5%;
+	border-collapse: collapse;
 }
 
+.scrum-menu a {
+	margin-left: 1em;
+}

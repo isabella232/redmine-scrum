@@ -9,15 +9,16 @@ class ScrumController < ApplicationController
 
   menu_item :product_backlog
 
-  before_filter :find_issue, :only => [:change_story_points, :change_pending_effort,
-                                       :change_assigned_to, :create_time_entry,
-                                       :edit_task, :update_task]
+  before_filter :find_issue, :only => [:change_story_points, :change_pending_effort, :change_assigned_to,
+                                       :new_time_entry, :create_time_entry, :edit_task, :update_task]
   before_filter :find_sprint, :only => [:new_pbi, :create_pbi]
   before_filter :find_pbi, :only => [:new_task, :create_task, :edit_pbi, :update_pbi, :move_pbi,
                                      :move_to_last_sprint, :move_to_product_backlog]
   before_filter :find_project_by_project_id, :only => [:release_plan]
-  before_filter :authorize, :except => [:new_pbi, :create_pbi, :new_task, :create_task]
+  before_filter :authorize, :except => [:new_pbi, :create_pbi, :new_task, :create_task,
+                                        :new_time_entry, :create_time_entry]
   before_filter :authorize_add_issues, :only => [:new_pbi, :create_pbi, :new_task, :create_task]
+  before_filter :authorize_log_time, :only => [:new_time_entry, :create_time_entry]
 
   helper :scrum
   helper :timelog
@@ -46,14 +47,29 @@ class ScrumController < ApplicationController
     render_task(@project, @issue, params)
   end
 
+  def new_time_entry
+    @pbi_status_id = params[:pbi_status_id]
+    @other_pbi_status_ids = params[:other_pbi_status_ids]
+    @task_id = params[:task_id]
+    respond_to do |format|
+      format.js
+    end
+  end
+
   def create_time_entry
-    time_entry = TimeEntry.new(params[:time_entry])
-    time_entry.project_id = @project.id
-    time_entry.issue_id = @issue.id
-    time_entry.user_id = params[:time_entry][:user_id]
-    call_hook(:controller_timelog_edit_before_save, {:params => params, :time_entry => time_entry})
-    time_entry.save!
-    render_task(@project, @issue, params)
+    begin
+      time_entry = TimeEntry.new(params[:time_entry])
+      time_entry.project_id = @project.id
+      time_entry.issue_id = @issue.id
+      time_entry.user_id = params[:time_entry][:user_id]
+      call_hook(:controller_timelog_edit_before_save, {:params => params, :time_entry => time_entry})
+      time_entry.save!
+    rescue Exception => @exception
+      logger.error("Exception: #{@exception.inspect}")
+    end
+    respond_to do |format|
+      format.js
+    end
   end
 
   def new_pbi
@@ -62,7 +78,7 @@ class ScrumController < ApplicationController
     @pbi.tracker = @project.trackers.find(params[:tracker_id])
     @pbi.author = User.current
     @pbi.sprint = @sprint
-    @top = true unless params[:top].nil? or (params[:top] == "false") 
+    @top = true unless params[:top].nil? or (params[:top] == "false")
     respond_to do |format|
       format.html
       format.js
@@ -216,6 +232,7 @@ class ScrumController < ApplicationController
   end
 
   def release_plan
+    @product_backlog = @project.product_backlog
     @sprints = []
     velocity_all_pbis, velocity_scheduled_pbis, @sprints_count = @project.story_points_per_sprint
     @velocity_type = params[:velocity_type] || "only_scheduled"
@@ -295,13 +312,21 @@ private
     render_404
   end
 
-  def authorize_add_issues
-    if User.current.allowed_to?(:add_issues, @project)
+  def authorize_action_on_current_project(action)
+    if User.current.allowed_to?(action, @project)
       return true
     else
       render_403
       return false
     end
+  end
+
+  def authorize_add_issues
+    authorize_action_on_current_project(:add_issues)
+  end
+
+  def authorize_log_time
+    authorize_action_on_current_project(:log_time)
   end
 
   def update_attributes(issue, params)

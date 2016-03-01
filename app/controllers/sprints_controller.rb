@@ -40,8 +40,8 @@ class SprintsController < ApplicationController
   end
 
   def new
-    @sprint = Sprint.new(:project => @project)
-    if params[:create_product_backlog]
+    @sprint = Sprint.new(:project => @project, :is_product_backlog => params[:create_product_backlog])
+    if @sprint.is_product_backlog
       @sprint.name = l(:label_product_backlog)
       @sprint.sprint_start_date = @sprint.sprint_end_date = Date.today
     end
@@ -60,7 +60,7 @@ class SprintsController < ApplicationController
         raise "Fail to update project with product backlog" unless @project.save!
       end
       flash[:notice] = l(:notice_successful_create)
-      redirect_to settings_project_path(@project, :tab => "sprints")
+      redirect_back_or_default settings_project_path(@project, :tab => "sprints")
     else
       render :action => :new
     end
@@ -74,7 +74,7 @@ class SprintsController < ApplicationController
   def update
     if @sprint.update_attributes(params[:sprint])
       flash[:notice] = l(:notice_successful_update)
-      redirect_to settings_project_path(@project, :tab => "sprints")
+      redirect_back_or_default settings_project_path(@project, :tab => "sprints")
     else
       render :action => :edit
     end
@@ -130,7 +130,7 @@ class SprintsController < ApplicationController
       end
     end
     flash[:notice] = l(:notice_successful_update)
-    redirect_to settings_project_path(@project, :tab => "sprints")
+    redirect_back_or_default settings_project_path(@project, :tab => "sprints")
   end
 
   def burndown_index
@@ -259,6 +259,11 @@ class SprintsController < ApplicationController
 
     @effort_by_activity, @effort_by_activity_total = @sprint.time_entries_by_activity
     @effort_by_activity_chart = {:width => 400, :height => 400}
+
+    if User.current.allowed_to?(:view_sprint_stats_by_member, @project)
+      @efforts_by_member_and_activity = @sprint.efforts_by_member_and_activity
+      @efforts_by_member_and_activity_chart = {:id => "stats_efforts_by_member_and_activity", :height => 400}
+    end
   end
 
 private

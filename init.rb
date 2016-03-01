@@ -30,7 +30,7 @@ Redmine::Plugin.register :scrum do
   name              "Scrum Redmine plugin"
   author            "Emilio González Montaña"
   description       "This plugin for Redmine allows to follow Scrum methodology with Redmine projects"
-  version           "0.11.1"
+  version           "0.12.0"
   url               "https://redmine.ociotec.com/projects/redmine-plugin-scrum"
   author_url        "http://ociotec.com"
   requires_redmine  :version_or_higher => "3.0.0"
@@ -44,7 +44,7 @@ Redmine::Plugin.register :scrum do
     permission      :edit_sprint_board,
                     {:sprints => [:change_task_status],
                      :scrum => [:change_story_points, :change_pending_effort, :change_assigned_to,
-                               :create_time_entry, :new_pbi, :create_pbi, :edit_pbi, :update_pbi,
+                               :new_pbi, :create_pbi, :edit_pbi, :update_pbi,
                                :new_task, :create_task, :edit_task, :update_task]},
                     :require => :member
     permission      :view_sprint_burndown,
@@ -92,10 +92,11 @@ Redmine::Plugin.register :scrum do
                                  :render_updated_on_pbi => "0",
                                  :check_dependencies_on_pbi_sorting => "0",
                                  :product_burndown_sprints => "4",
-                                 :render_pbis_deviations => "1",
-                                 :render_tasks_deviations => "1",
-                                 :major_deviation_ratio => 150,
-                                 :minor_deviation_ratio => 120,
-                                 :below_deviation_ratio => 70},
+                                 :render_pbis_speed => "1",
+                                 :render_tasks_speed => "1",
+                                 :lowest_speed => 70,
+                                 :low_speed => 80,
+                                 :high_speed => 140,
+                                 :render_plugin_tips => "1"},
                     :partial => "settings/scrum_settings"
 end

@@ -7,8 +7,16 @@
         <%- if User.current.allowed_to?(:edit_sprint_board, project) and 
                User.current.allowed_to?(:edit_issues, project) and
                task.editable? and !read_only -%>
-          <%= link_to "", edit_task_path(task),
-                      :remote => true, :method => "GET", :class => "icon icon-edit float-icon" %>
+          <%= link_to "", edit_task_path(task), :remote => true, :method => "GET",
+                      :class => "icon icon-edit float-icon", :title => l(:label_edit_task) %>
+        <%- end -%>
+        <%- if User.current.allowed_to?(:log_time, project) -%>
+            <%= link_to "", new_scrum_time_entry_path(task,
+                                                      :pbi_status_id => pbi_status_id,
+                                                      :other_pbi_status_ids => other_pbi_status_ids.join(","),
+                                                      :task_id => task_id),
+                        :remote => true, :method => "GET", :class => "icon icon-log-time float-icon",
+                        :title => l(:button_log_time) %>
         <%- end -%>
         <%= render_issue_icons(task) %>
         <%= render :partial => "post_its/sprint_board/fields", :formats => [:html],
@@ -62,10 +70,3 @@
                        :other_pbi_status_ids => other_pbi_status_ids,
                        :task_id => task_id,
                        :task => task} %>
-
-<%= render :partial => "post_its/sprint_board/task_context_menu", :formats => [:html],
-           :locals => {:project => project,
-                       :task => task,
-                       :pbi_status_id => pbi_status_id,
-                       :other_pbi_status_ids => other_pbi_status_ids,
-                       :task_id => task_id} %>

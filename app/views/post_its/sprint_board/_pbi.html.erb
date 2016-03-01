@@ -5,9 +5,14 @@
       <%- if User.current.allowed_to?(:edit_sprint_board, project) and 
              User.current.allowed_to?(:edit_issues, project) and
              pbi.editable? and !read_only -%>
-        <%= link_to "", edit_pbi_path(pbi),
-                    :remote => true, :method => "GET", :class => "icon icon-edit float-icon" %>
-      <%- end -%>
+        <%= link_to "", edit_pbi_path(pbi), :remote => true, :method => "GET",
+                    :class => "icon icon-edit float-icon", :title => l(:label_edit_pbi) %>
+        <%- Tracker.task_trackers.each do |tracker| -%>
+          <%= link_to "", new_task_path(pbi, tracker), :remote => true, :method => "GET",
+                      :class => "icon icon-add float-icon",
+                      :title => l(:label_add_task, :tracker => tracker.name) %>
+        <%- end -%>
+    <%- end -%>
       <%= render_issue_icons(pbi) %>
       <%= render :partial => "post_its/sprint_board/fields", :formats => [:html],
                  :locals => {:project => project, :issue => pbi} %>
@@ -42,8 +47,3 @@
     </td>
   </tr>
 </table>
-
-<%= render :partial => "post_its/sprint_board/pbi_context_menu", :formats => [:html],
-           :locals => {:project => project,
-                       :pbi => pbi,
-                       :pbi_id => pbi_id} %>

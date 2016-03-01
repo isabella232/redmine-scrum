@@ -189,10 +189,12 @@ module Scrum
           return (the_pending_effort + the_spent_hours)
         end
 
-        def deviation_ratio
-          the_estimated_hours = self.estimated_hours.nil? ? 0.0 : self.estimated_hours
-          if ((self.is_pbi? or self.is_task?) and (the_estimated_hours > 0.0))
-            return ((self.total_time * 100.0) / the_estimated_hours).round
+        def speed
+          if (self.is_pbi? or self.is_task?) and (self.total_time > 0.0)
+            the_estimated_hours = self.total_estimated_hours.nil? ? 0.0 : self.total_estimated_hours
+            return ((the_estimated_hours * 100.0) / self.total_time).round
+          else
+            return nil
           end
         end
 

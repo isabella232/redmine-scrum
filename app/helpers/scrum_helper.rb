@@ -57,34 +57,30 @@ module ScrumHelper
 
   def render_issue_icons(issue)
     icons = []
-    if ((issue.is_pbi? and Scrum::Setting.render_pbis_deviations) or
-        (issue.is_task? and Scrum::Setting.render_tasks_deviations))
-      deviation_ratio = issue.deviation_ratio
-      unless deviation_ratio.nil?
-        if deviation_ratio >= Scrum::Setting.major_deviation_ratio
-          icons << render_issue_icon(MAJOR_DEVIATION_ICON, deviation_ratio)
-        elsif deviation_ratio >= Scrum::Setting.minor_deviation_ratio
-          icons << render_issue_icon(MINOR_DEVIATION_ICON, deviation_ratio)
-        elsif deviation_ratio <= Scrum::Setting.below_deviation_ratio
-          icons << render_issue_icon(BELOW_DEVIATION_ICON, deviation_ratio)
+    if ((issue.is_pbi? and Scrum::Setting.render_pbis_speed) or
+        (issue.is_task? and Scrum::Setting.render_tasks_speed))
+      if (speed = issue.speed)
+        if speed <= Scrum::Setting.lowest_speed
+          icons << render_issue_icon(LOWEST_SPEED_ICON, speed)
+        elsif speed <= Scrum::Setting.low_speed
+          icons << render_issue_icon(LOW_SPEED_ICON, speed)
+        elsif speed >= Scrum::Setting.high_speed
+          icons << render_issue_icon(HIGH_SPEED_ICON, speed)
         end
       end
     end
-    render :inline => icons.join("\n")
+    render :inline => icons.join('\n')
   end
 
-  DEVIATION_ICONS = [MAJOR_DEVIATION_ICON = "exclamation.png",
-                     MINOR_DEVIATION_ICON = "warning.png",
-                     BELOW_DEVIATION_ICON = "lightning.png"]
+  DEVIATION_ICONS = [LOWEST_SPEED_ICON = "icon-major-deviation",
+                     LOW_SPEED_ICON = "icon-minor-deviation",
+                     HIGH_SPEED_ICON = "icon-below-deviation"]
 
 private
 
-  def render_issue_icon(image_path, deviation_ratio = nil)
-    content_tag("div") do
-      options = {:class => "float float-icon"}
-      options[:title] = l(:label_deviation, :deviation => deviation_ratio) unless deviation_ratio.nil?
-      image_tag(image_path, options)
-    end
+  def render_issue_icon(icon, speed)
+    link_to("", "#", :class => "icon float-icon #{icon}",
+            :title => l(:label_issue_speed, :speed => speed))
   end
 
 end

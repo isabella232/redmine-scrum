@@ -95,6 +95,105 @@ module Scrum
         end
         alias_method_chain :parse_redmine_links, :scrum
 
+        def scrum_tips
+          tips = []
+          if Scrum::Setting.render_plugin_tips
+            # Plugin permissions check.
+            unless @project and !(@project.module_enabled?(:scrum))
+              scrum_permissions = Redmine::AccessControl.modules_permissions(["scrum"]).select{|p| p.project_module}.collect{|p| p.name}
+              active_scrum_permissions = Role.all.collect{|r| r.permissions & scrum_permissions}.flatten
+              if active_scrum_permissions.empty?
+                tips << l(:label_tip_no_permissions,
+                          :link => link_to(l(:label_tip_permissions_link), permissions_roles_path))
+              end
+            end
+            # Minimal plugin settings check.
+            plugin_settings_link = link_to(l(:label_tip_plugin_settings_link),
+                                           plugin_settings_path(:id => :scrum))
+            if Scrum::Setting.story_points_custom_field_id.blank?
+              tips << l(:label_tip_no_plugin_setting, :link => plugin_settings_link,
+                        :setting => l(:label_setting_story_points_custom_field))
+            end
+            if Scrum::Setting.pbi_tracker_ids.empty?
+              tips << l(:label_tip_no_plugin_setting, :link => plugin_settings_link,
+                        :setting => l(:label_pbi_plural))
+            end
+            if Scrum::Setting.task_tracker_ids.empty?
+              tips << l(:label_tip_no_plugin_setting, :link => plugin_settings_link,
+                        :setting => l(:label_task_plural))
+            end
+            if Scrum::Setting.task_status_ids.empty?
+              tips << l(:label_tip_no_plugin_setting, :link => plugin_settings_link,
+                        :setting => l(:label_setting_task_statuses))
+            end
+            if Scrum::Setting.pbi_status_ids.empty?
+              tips << l(:label_tip_no_plugin_setting, :link => plugin_settings_link,
+                        :setting => l(:label_setting_pbi_statuses))
+            end
+            # Project configuration checks.
+            if @project and @project.persisted? and @project.module_enabled?(:scrum)
+              product_backlog_link = link_to(l(:label_tip_product_backlog_link),
+                                             project_product_backlog_index_path(@project))
+              # PB exists check.
+              if @project.product_backlog.nil?
+                tips << l(:label_tip_no_product_backlog,
+                          :link => link_to(l(:label_tip_new_product_backlog_link),
+                                           new_project_sprint_path(@project, :create_product_backlog => true,
+                                                                   :back_url => url_for(params))))
+              end
+              # At least one Sprint check.
+              if @project.sprints.empty?
+                tips << l(:label_tip_no_sprints,
+                          :link => link_to(l(:label_tip_new_sprint_link),
+                                           new_project_sprint_path(@project, :back_url => url_for(params))))
+              end
+              # Product backlog (+release plan) checks.
+              if @product_backlog and @product_backlog.persisted?
+                # No PBIs check.
+                if @product_backlog.pbis.empty?
+                  tips << l(:label_tip_product_backlog_without_pbis, :link => product_backlog_link)
+                end
+                # Release plan checks.
+                if params[:controller] == "scrum" and params[:action] == "release_plan"
+                  # No versions check.
+                  if @project.versions.empty?
+                    tips << l(:label_tip_project_without_versions,
+                              :link => link_to(l(:label_tip_new_version_link),
+                                               new_project_version_path(@project, :back_url => url_for(params))))
+                  end
+                end
+              end
+              # Sprint checks.
+              if @sprint and @sprint.persisted? and !(@sprint.is_product_backlog?)
+                sprint_board_link = link_to(l(:label_tip_sprint_board_link),
+                                            sprint_path(@sprint))
+                # No PBIs check.
+                if @sprint.pbis.empty?
+                  tips << l(:label_tip_sprint_without_pbis, :sprint_board_link => sprint_board_link,
+                            :product_backlog_link => product_backlog_link)
+                end
+                # No tasks check.
+                if @sprint.tasks.empty?
+                  tips << l(:label_tip_sprint_without_tasks, :link => sprint_board_link)
+                end
+                # No estimated effort check.
+                if @sprint.efforts.empty?
+                  tips << l(:label_tip_sprint_without_efforts,
+                            :link => link_to(l(:label_tip_sprint_effort_link),
+                                             edit_effort_sprint_path(@sprint, :back_url => url_for(params))))
+                end
+                # No project members on edit Sprint effort view.
+                if @project.members.empty? and params[:action].to_s == 'edit_effort'
+                  tips << l(:label_tip_project_without_members,
+                            :link => link_to(l(:label_tip_project_members_link),
+                                             settings_project_path(@project, :tab => :members)))
+                end
+              end
+            end
+          end
+          return tips
+        end
+
       end
     end
   end

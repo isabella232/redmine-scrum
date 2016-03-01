@@ -1,4 +1,4 @@
-<%= render :partial => "common/scrum_menu" %>
+<%= render :partial => "common/scrum_sprint_menu" %>
 
 <h2>
   <%= l(:label_sprint_burndown_chart) %>
@@ -15,15 +15,17 @@
   <%= stylesheet_link_tag "xcharts.min.css", :plugin => "scrum" %>
 <% end %>
 
-<div style="right: 10px; position: absolute;">
-  <svg height="80" width="300" class="xchart">
+<div style="position: relative;">
+  <svg height="80" width="300" class="xchart"
+       style="position: absolute; top: 0px; right: 0px;">
     <g class="line color0"><path class="line" stroke-width="10" d="M5 15 H70" /></g>
     <g class="axis"><text x="80" y="18"><%= l(:label_estimated_effort) %></text></g>
     <g class="line color1"><path class="line" stroke-width="10" d="M5 35 H70" /></g>
     <g class="axis"><text x="80" y="38"><%= l(:field_pending_effort) %></text></g>
   </svg>
+  <figure id="burndown-chart"
+          style="left-margin: auto; right-margin:auto; width: 90%; height: 500px;" />
 </div>
-<figure style="left-margin: auto; right-margin:auto; width: 90%; height: 500px;" id="burndown-chart" />
 
 <%= render :partial => "sprints/burndown", :formats => [:js], :locals => {:data => @data} %>
 

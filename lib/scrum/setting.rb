@@ -11,7 +11,7 @@ module Scrum
     ["create_journal_on_pbi_position_change", "inherit_pbi_attributes", "render_position_on_pbi",
       "render_category_on_pbi", "render_version_on_pbi", "render_author_on_pbi",
       "render_updated_on_pbi", "check_dependencies_on_pbi_sorting",
-      "render_pbis_deviations", "render_tasks_deviations"].each do |setting|
+      "render_pbis_speed", "render_tasks_speed", "render_plugin_tips"].each do |setting|
       src = <<-END_SRC
       def self.#{setting}
         setting_or_default_boolean(:#{setting})
@@ -64,11 +64,7 @@ module Scrum
     end
 
     def self.sprint_board_fields_for_tracker(tracker)
-      tracker_fields = tracker_fields(tracker.id, TrackerFields::FIELDS)
-      fields = [:status_id]
-      fields << :category_id if tracker_fields.include?("category_id")
-      fields << :fixed_version_id if tracker_fields.include?("fixed_version_id")
-      return fields
+      [:status_id, :category_id, :fixed_version_id]
     end
 
     def self.task_tracker
@@ -83,19 +79,19 @@ module Scrum
       setting_or_default_integer(:product_burndown_sprints, :min => 1)
     end
 
-    def self.major_deviation_ratio
-      setting_or_default_integer(:major_deviation_ratio, :min => 101, :max => 1000)
+    def self.lowest_speed
+      setting_or_default_integer(:lowest_speed, :min => 0, :max => 99)
     end
 
-    def self.minor_deviation_ratio
-      setting_or_default_integer(:minor_deviation_ratio, :min => 101, :max => 1000)
+    def self.low_speed
+      setting_or_default_integer(:low_speed, :min => 0, :max => 99)
     end
 
-    def self.below_deviation_ratio
-      setting_or_default_integer(:below_deviation_ratio, :min => 0, :max => 99)
+    def self.high_speed
+      setting_or_default_integer(:high_speed, :min => 101, :max => 10000)
     end
 
-    private
+  private
 
     def self.setting_or_default(setting)
       ::Setting.plugin_scrum[setting] ||

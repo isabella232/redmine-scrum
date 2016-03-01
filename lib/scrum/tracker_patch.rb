@@ -16,8 +16,10 @@ module Scrum
           Scrum::Setting.pbi_tracker_ids
         end
 
-        def self.pbi_trackers
-          Tracker.where(:id => pbi_trackers_ids)
+        def self.pbi_trackers(project = nil)
+          trackers_ids = pbi_trackers_ids
+          trackers_ids &= project.trackers.collect{ |tracker| tracker.id } if project
+          Tracker.where(:id => trackers_ids).sort
         end
 
         def is_pbi?
