@@ -9,6 +9,10 @@ module Scrum
           IssueStatus.find(Scrum::Setting.task_status_ids, :order => "position ASC")
         end
 
+        def self.pbi_statuses
+          IssueStatus.find(Scrum::Setting.pbi_status_ids, :order => "position ASC")
+        end
+
       end
     end
   end

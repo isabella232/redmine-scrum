@@ -85,6 +85,7 @@ class SprintsController < ApplicationController
     task = Issue.find(params[:task].match(/^task_(\d+)$/)[1].to_i)
     task.init_journal(User.current)
     task.status = IssueStatus.find(params[:status].to_i)
+    raise "New status is not allowed" unless task.new_statuses_allowed_to.include?(task.status)
     task.save!
     render :nothing => true
   end

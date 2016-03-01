@@ -29,6 +29,10 @@ resources :projects do
       :controller => :product_backlog, :action => :new_pbi,
       :as => :product_backlog_new_pbi
 
+  get "release_plan",
+      :controller => :scrum, :action => :release_plan,
+      :as => :release_plan
+
 end
 
 post "issues/:id/story_points",
@@ -52,6 +56,24 @@ post "scrum/:sprint_id/create_pbi",
 get "scrum/:pbi_id/new/:tracker_id",
     :controller => :scrum, :action => :new_task,
     :as => :new_task
-post "scrum/:pbi_id/create",
+post "scrum/:pbi_id/create_task",
      :controller => :scrum, :action => :create_task,
      :as => :create_task
+get "scrum/:pbi_id/edit_pbi",
+    :controller => :scrum, :action => :edit_pbi,
+    :as => :edit_pbi
+post "scrum/:pbi_id/update_pbi",
+     :controller => :scrum, :action => :update_pbi,
+     :as => :update_pbi
+get "scrum/:id/edit_task",
+    :controller => :scrum, :action => :edit_task,
+    :as => :edit_task
+post "scrum/:id/update_task",
+     :controller => :scrum, :action => :update_task,
+     :as => :update_task
+post "scrum/:pbi_id/move_to_last_sprint",
+     :controller => :scrum, :action => :move_to_last_sprint,
+     :as => :move_to_last_sprint
+post "scrum/:pbi_id/move_to_product_backlog",
+     :controller => :scrum, :action => :move_to_product_backlog,
+     :as => :move_to_product_backlog

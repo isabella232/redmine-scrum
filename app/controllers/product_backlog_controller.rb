@@ -62,20 +62,15 @@ class ProductBacklogController < ApplicationController
                 :pending_story_points => 0}
     end
 
-    i = @data.length - 1
-    story_points_per_sprint = 0
-    while (story_points_per_sprint == 0 and i >= 0)
-      story_points_per_sprint = @data[i][:story_points]
-      i -= 1
-    end
-    story_points_per_sprint = 1 if story_points_per_sprint == 0
+    @story_points_per_sprint, @sprints_count = @project.story_points_per_sprint
     pending_story_points = @project.product_backlog.story_points
     new_sprints = 1
     while pending_story_points > 0
       @data << {:axis_label => "#{l(:field_sprint)} +#{new_sprints}",
-                :story_points => ((story_points_per_sprint <= pending_story_points) ? story_points_per_sprint : pending_story_points),
+                :story_points => ((@story_points_per_sprint <= pending_story_points) ? 
+                                  @story_points_per_sprint : pending_story_points).round(2),
                 :pending_story_points => 0}
-      pending_story_points -= story_points_per_sprint
+      pending_story_points -= @story_points_per_sprint
       new_sprints += 1
     end
 

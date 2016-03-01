@@ -1,21 +1,19 @@
 <%- pbi_id = "pbi_#{pbi.id}" -%>
 
 <li id="<%= pbi_id %>"
-    class="<%= pbi.post_it_css_class(:small_rotate => true, :small_scale => true, :draggable => true) %>">
+    class="<%= pbi.post_it_css_class(:small_rotate => true, :small_scale => true, :draggable => !read_only) %>">
   <table>
     <tr>
       <td class="header-1">
-        <%= "#{l(:field_position)}: #{pbi.position}" %>
-        <%= ", #{l(:field_category)}: #{h(pbi.category.name)}" unless pbi.category.nil? %>
+        <%= render_pbi_left_header(pbi) %>
       </td>
       <td class="header-2">
-        <%= authoring pbi.created_on, pbi.author %>
-        <%= ". #{l(:label_updated_time, time_tag(pbi.updated_on))}".html_safe if pbi.created_on != pbi.updated_on %>
+        <%= render_pbi_right_header(pbi) %>
       </td>
       <td class="story-points" rowspan="2">
         <%- if pbi.has_story_points? -%>
           <%= render :partial => "common/scrum_story_points",
-                     :locals => {:project => project, :pbi => pbi} %>
+                     :locals => {:project => project, :pbi => pbi, :read_only => read_only} %>
         <%- end -%>
       </td>
       <td class="story-points-legend" rowspan="2">
@@ -23,6 +21,14 @@
           <span title="<%= l(:label_story_point_plural) %>"><%= l(:label_story_point_unit) %></span>
         <%- end -%>
       </td>
+      <%- if User.current.allowed_to?(:edit_product_backlog, project) and 
+             User.current.allowed_to?(:edit_issues, project) and
+             pbi.editable? and !read_only -%>
+        <td class="story-points-legend" rowspan="2">
+          <%= link_to "", edit_pbi_path(pbi),
+                      :remote => true, :method => "GET", :class => "icon icon-edit" %>
+        </td>
+      <%- end -%>
     </tr>
     <tr>
       <td class="content" colspan="2">
@@ -32,7 +38,7 @@
   </table>
 </li>
 
-<%- if User.current.allowed_to?(:edit_product_backlog, project) and pbi.editable? -%>
+<%- if User.current.allowed_to?(:edit_product_backlog, project) and pbi.editable? and !read_only -%>
   <%= javascript_tag do %>
     draggableOnTouchScreen("<%= pbi_id %>");
   <% end %>

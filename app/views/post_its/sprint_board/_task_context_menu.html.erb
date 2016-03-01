@@ -58,16 +58,15 @@
         <% end %>
       </fieldset>
     <%- end -%>
+    <%= render :partial => "post_its/sprint_board/task_context_menu", :formats => [:js],
+               :locals => {:project => project,
+                           :pbi_status_id => pbi_status_id,
+                           :other_pbi_status_ids => other_pbi_status_ids,
+                           :task_id => task_id,
+                           :task => task,
+                           :context_menu_id => context_menu_id,
+                           :context_menu_assigned_to_id => context_menu_assigned_to_id,
+                           :close_context_menu_task_id => close_context_menu_task_id,
+                           :time_entry_form_id => time_entry_form_id} %>
   </div>
-
-  <%= render :partial => "post_its/sprint_board/task_context_menu", :formats => [:js],
-             :locals => {:project => project,
-                         :pbi_status_id => pbi_status_id,
-                         :other_pbi_status_ids => other_pbi_status_ids,
-                         :task_id => task_id,
-                         :task => task,
-                         :context_menu_id => context_menu_id,
-                         :context_menu_assigned_to_id => context_menu_assigned_to_id,
-                         :close_context_menu_task_id => close_context_menu_task_id,
-                         :time_entry_form_id => time_entry_form_id} %>
 <%- end -%>

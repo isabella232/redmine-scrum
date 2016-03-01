@@ -25,7 +25,8 @@ class Sprint < ActiveRecord::Base
   end
 
   def pbis
-    issues.all(:conditions => {:tracker_id => Scrum::Setting.pbi_tracker_ids},
+    issues.all(:conditions => {:tracker_id => Scrum::Setting.pbi_tracker_ids,
+                               :status_id => Scrum::Setting.pbi_status_ids},
                :order => "position ASC").select{|issue| issue.visible?}
   end
 

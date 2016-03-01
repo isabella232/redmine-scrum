@@ -38,8 +38,6 @@ module Scrum
         end
 
         def custom_field?(custom_field)
-          puts("%%% custom_field: #{custom_field.inspect}")
-          puts("%%% Scrum::Setting.tracker_custom_fields(self.id): #{Scrum::Setting.tracker_custom_fields(self.id).inspect}")
           Scrum::Setting.tracker_custom_field?(self.id, custom_field) or custom_field.is_required
         end
 

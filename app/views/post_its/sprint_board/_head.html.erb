@@ -35,13 +35,13 @@
         <%- if User.current.allowed_to?(:view_sprint_stats_by_member, project) -%>
         <p>
           <label><%= l(:label_estimated_effort) %>:</label>
-          <%- time_entries, total = sprint.time_entries_by_member -%>
-          <%= raw(time_entries.collect{|activity| "#{link_to_user(activity[:member])} #{l(:label_time_stat, :time => activity[:total], :percentage => activity[:percentage])}"}.join(", ")) %>
+          <%- efforts, total = sprint.efforts_by_member -%>
+          <%= raw(efforts.collect{|effort| "#{link_to_user(effort[:member])} #{l(:label_time_stat, :time => effort[:total], :percentage => effort[:percentage])}"}.join(", ")) %>
         </p>
         <p>
           <label><%= l(:label_done_effort) %>:</label>
-          <%- efforts, total = sprint.efforts_by_member -%>
-          <%= raw(efforts.collect{|effort| "#{link_to_user(effort[:member])} #{l(:label_time_stat, :time => effort[:total], :percentage => effort[:percentage])}"}.join(", ")) %>
+          <%- time_entries, total = sprint.time_entries_by_member -%>
+          <%= raw(time_entries.collect{|activity| "#{link_to_user(activity[:member])} #{l(:label_time_stat, :time => activity[:total], :percentage => activity[:percentage])}"}.join(", ")) %>
         </p>
         <%- end -%>
       </div>

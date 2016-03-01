@@ -14,6 +14,9 @@
 									 status: encodeURIComponent("<%= status.id %>")},
 						error: function() {
 							alert("<%= l(:error_changing_task_status) %>");
+							var task = $(ui.draggable);
+							task.detach();
+							task.appendTo($("#<%= "pbi_#{pbi_id}_status_" %>" + ui.draggable.attr("old-status")));
 						},
 						complete: function() {
 							if ($.isFunction($.fn.hideOnLoad)) {
@@ -21,6 +24,7 @@
 							}
 						},
 						success: function() {
+							ui.draggable.attr("old-status", "<%= status.id %>");
 							window["container_" + $(ui.draggable).attr("id")] = "";
 						}
 					});

@@ -17,11 +17,14 @@ module Scrum
         end
 
         def add_default_sprint
-          if @issue.is_task? and @project.last_sprint
-            @issue.sprint = @project.last_sprint
-          end
-          if @issue.is_pbi? and @project.product_backlog
-            @issue.sprint = @project.product_backlog
+          if @issue.id.nil?
+            if @issue.is_task? and @project.last_sprint
+              @issue.sprint = @project.last_sprint
+            elsif @issue.is_pbi? and @project.product_backlog
+              @issue.sprint = @project.product_backlog
+            else
+              @issue.sprint = nil
+            end
           end
         end
 

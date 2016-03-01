@@ -1,48 +1,50 @@
 module Scrum
   class Setting
 
-    def self.create_journal_on_pbi_position_change
-      setting_or_default(:create_journal_on_pbi_position_change) == "1"
+    ["create_journal_on_pbi_position_change", "inherit_pbi_attributes", "render_position_on_pbi",
+      "render_category_on_pbi", "render_version_on_pbi", "render_author_on_pbi",
+      "render_updated_on_pbi"].each do |setting|
+      src = <<-END_SRC
+      def self.#{setting}
+        setting_or_default_boolean(:#{setting})
+      end
+      END_SRC
+      class_eval src, __FILE__, __LINE__
     end
 
-    def self.doer_color
-      setting_or_default(:doer_color)
+    ["doer_color", "reviewer_color"].each do |setting|
+      src = <<-END_SRC
+      def self.#{setting}
+        setting_or_default(:#{setting})
+      end
+      END_SRC
+      class_eval src, __FILE__, __LINE__
     end
 
-    def self.reviewer_color
-      setting_or_default(:reviewer_color)
+    ["task_status_ids", "task_tracker_ids", "pbi_status_ids", "pbi_tracker_ids",
+      "verification_activity_ids"].each do |setting|
+      src = <<-END_SRC
+      def self.#{setting}
+        collect_ids(:#{setting})
+      end
+      END_SRC
+      class_eval src, __FILE__, __LINE__
     end
 
     def self.story_points_custom_field_id
       ::Setting.plugin_scrum[:story_points_custom_field_id]
     end
 
-    def self.task_status_ids
-      collect_ids(:task_status_ids)
-    end
-
-    def self.task_tracker_ids
-      collect_ids(:task_tracker_ids)
-    end
-
     def self.task_tracker
       Tracker.all(task_tracker_ids)
-    end
-
-    def self.pbi_tracker_ids
-      collect_ids(:pbi_tracker_ids)
-    end
-
-    def self.verification_activity_ids
-      collect_ids(:verification_activity_ids)
     end
 
     def self.tracker_id_color(id)
       setting_or_default("tracker_#{id}_color")
     end
 
-    def self.inherit_pbi_attributes
-      setting_or_default(:inherit_pbi_attributes) == "1"
+    def self.product_burndown_sprints
+      setting_or_default_integer(:product_burndown_sprints, :min => 1)
     end
 
     def self.tracker_fields(tracker)
@@ -66,6 +68,17 @@ module Scrum
     def self.setting_or_default(setting)
       ::Setting.plugin_scrum[setting] ||
       Redmine::Plugin::registered_plugins[:scrum].settings[:default][setting]
+    end
+
+    def self.setting_or_default_boolean(setting)
+      setting_or_default(setting) == "1"
+    end
+
+    def self.setting_or_default_integer(setting, options = {})
+      value = setting_or_default(setting).to_i
+      value = options[:min] if options[:min] and value < options[:min]
+      value = options[:max] if options[:max] and value > options[:max]
+      value
     end
 
     def self.collect_ids(setting)

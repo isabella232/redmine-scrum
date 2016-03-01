@@ -40,26 +40,31 @@
 				}
 			});
 		});
+		<%- sending_time_entry = "sending_time_entry_#{time_entry_form_id}" -%>
+		var <%= sending_time_entry %> = false;
 		$("#<%= time_entry_form_id %>").submit(function() {
-			console.log("submit");
-			var values = $(this).serialize();
-			$.ajax({
-				url: $(this).attr("action"),
-				type: "POST",
-				data: values,
-				error: function() {
-					alert("<%= l(:error_creating_time_entry) %>");
-				},
-				complete: function() {
-					$(".scrum-custom-menu").hide();
-					if ($.isFunction($.fn.hideOnLoad)) {
-						hideOnLoad();
+			if (!<%= sending_time_entry %>) {
+				<%= sending_time_entry %> = true;
+				var values = $(this).serialize();
+				$.ajax({
+					url: $(this).attr("action"),
+					type: "POST",
+					data: values,
+					error: function() {
+						alert("<%= l(:error_creating_time_entry) %>");
+					},
+					complete: function() {
+						$(".scrum-custom-menu").hide();
+						if ($.isFunction($.fn.hideOnLoad)) {
+							hideOnLoad();
+						}
+						<%= sending_time_entry %> = false;
+					},
+					success: function(data) {
+						$("#<%= task_id %>").replaceWith(data);
 					}
-				},
-				success: function(data) {
-					$("#<%= task_id %>").replaceWith(data);
-				}
-			});
+				});
+			}
 			return false;
 		});
 	<% end %>

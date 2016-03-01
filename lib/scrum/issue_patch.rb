@@ -118,7 +118,8 @@ module Scrum
           if is_task? and id and new_effort
             effort = PendingEffort.first(:conditions => {:issue_id => id, :date => Date.today})
             if effort.nil?
-              effort = PendingEffort.new(:issue_id => id, :date => Date.today, :effort => new_effort)
+              date = (pending_efforts.empty? and sprint and sprint.start_date) ? sprint.start_date : Date.today
+              effort = PendingEffort.new(:issue_id => id, :date => date, :effort => new_effort)
             else
               effort.effort = new_effort
             end
@@ -144,6 +145,10 @@ module Scrum
           self.tracker.custom_field?(custom_field)
         end
 
+        def set_on_top
+          @set_on_top = true
+        end
+
       protected
 
         def copy_attribute(source_issue, attribute)
@@ -156,8 +161,12 @@ module Scrum
 
         def update_position
           if sprint_id_was.blank?
-            # From nothing to PB or Sprint
-            move_issue_to_the_end_of_the_sprint
+            # New PBI into PB or Sprint
+            if @set_on_top
+              move_issue_to_the_begin_of_the_sprint
+            else
+              move_issue_to_the_end_of_the_sprint
+            end
           elsif sprint and (old_sprint = Sprint.find(sprint_id_was))
             if old_sprint.is_product_backlog
               # From PB to Sprint

@@ -15,10 +15,17 @@
 <%- end -%>
 <%- if !defined?(@exception) -%>
 	if ($("#pbis").length > 0) {
-		$("#pbis").append("<%=
-			escape_javascript(render :partial => "post_its/product_backlog/pbi", :formats => [:html],
-															 :locals => {:project => @project, :pbi => @pbi}).html_safe
-		%>");
+		<%- if @top -%>
+			$("#pbis").prepend("<%=
+				escape_javascript(render :partial => "post_its/product_backlog/pbi", :formats => [:html],
+																 :locals => {:project => @project, :pbi => @pbi, :read_only => false}).html_safe
+			%>");
+		<%- else -%>
+			$("#pbis").append("<%=
+				escape_javascript(render :partial => "post_its/product_backlog/pbi", :formats => [:html],
+																 :locals => {:project => @project, :pbi => @pbi, :read_only => false}).html_safe
+			%>");
+		<%- end -%>
 	} else if ($("#sprint_board").length > 0) {
 		$("#sprint_board").append("<%=
 			escape_javascript(render :partial => "post_its/sprint_board/pbi_row", :formats => [:html],
@@ -26,4 +33,7 @@
 																					 :task_statuses => IssueStatus.task_statuses}).html_safe
 		%>");
 	}
+  <%- if (!(IssueStatus.pbi_statuses.include?(@pbi.status))) -%>
+    $("#<%= @pbi.sprint.is_product_backlog? ? "pbi_#{@pbi.id}" : "pbi_#{@pbi.id}_row" %>").remove();
+  <%- end -%>
 <%- end -%>

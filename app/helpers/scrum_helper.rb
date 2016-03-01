@@ -1,5 +1,7 @@
 module ScrumHelper
 
+  include ProjectsHelper
+
   def render_hours(hours, options = {})
     if hours.nil?
       ""
@@ -19,6 +21,31 @@ module ScrumHelper
         render :inline => "<span title=\"#{options[:title]}\">#{text}</span>"
       end
     end
+  end
+
+  def render_pbi_left_header(pbi)
+    parts = []
+    if Scrum::Setting.render_position_on_pbi
+      parts << "#{l(:field_position)}: #{pbi.position}"
+    end
+    if Scrum::Setting.render_category_on_pbi and pbi.category
+      parts << "#{l(:field_category)}: #{h(pbi.category.name)}"
+    end
+    if Scrum::Setting.render_version_on_pbi and pbi.fixed_version
+      parts << "#{l(:field_fixed_version)}: #{link_to_version(pbi.fixed_version)}"
+    end
+    render :inline => parts.join(", ")
+  end
+
+  def render_pbi_right_header(pbi)
+    parts = []
+    if Scrum::Setting.render_author_on_pbi
+      parts << authoring(pbi.created_on, pbi.author)
+    end
+    if Scrum::Setting.render_updated_on_pbi and pbi.created_on != pbi.updated_on
+      parts << "#{l(:label_updated_time, time_tag(pbi.updated_on))}"
+    end
+    render :inline => parts.join(", ")
   end
 
 end

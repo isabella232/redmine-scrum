@@ -10,6 +10,15 @@
 	background-image: url(../images/icon-product-backlog-16.png);
 }
 
+.icon-release-plan {
+	background-image: url(../images/icon-release-plan-16.png);
+}
+
+.float-icon {
+	float: right;
+	min-height: 16px;
+}
+
 .post-it, .post-it input {
 }
 
@@ -227,6 +236,10 @@ table.sprint-board tr.sprint-board {
 }
 
 table.sprint-board tr.sprint-board th.sprint-board {
+	border-bottom: 0.5em solid darkgrey;
+	min-width: 13em;
+	padding-left: 0.8em;
+	padding-top: 0.8em;
 }
 
 table.sprint-board tr.sprint-board td.sprint-board {
@@ -395,4 +408,10 @@ table.sprint-pbi input, table.sprint-task input {
 	box-shadow: 0 1px 3px #000;
 	border-collapse: separate;
 	display: none
+}
+
+.modal-issue-menu {
+  text-align: right;
+  margin-bottom: 0.5em;
+  font-size: 0.9em;
 }

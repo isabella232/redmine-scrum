@@ -7,23 +7,19 @@
 <%= render :partial => "post_its/sprint_board/head",
            :locals => {:project => @project, :sprint => @sprint, :path => method(:sprint_path)} %>
 
-<%- if @sprint.pbis.empty? -%>
-  <p class="nodata"><%= l(:label_no_data) %></p>
-<%- else -%>
-  <table id="sprint_board" class="sprint-board">
-    <tr class="sprint-board">
-      <th class="sprint-board"><%= l(:label_pbi_plural) %></th>
-      <%- task_statuses = IssueStatus.task_statuses
-          task_statuses.each do |status| -%>
-        <th class="sprint-board"><%= status.name %></th>
-      <%- end -%>
-    </tr>
-    <%- @sprint.pbis.each do |pbi| -%>
-      <%= render :partial => "post_its/sprint_board/pbi_row",
-                 :locals => {:project => @project, :pbi => pbi, :task_statuses => task_statuses} %>
+<table id="sprint_board" class="sprint-board">
+  <tr class="sprint-board">
+    <th class="sprint-board"><%= l(:label_pbi_plural) %></th>
+    <%- task_statuses = IssueStatus.task_statuses
+        task_statuses.each do |status| -%>
+      <th class="sprint-board"><%= status.name %></th>
     <%- end -%>
-  </table>
-<%- end -%>
+  </tr>
+  <%- @sprint.pbis.each do |pbi| -%>
+    <%= render :partial => "post_its/sprint_board/pbi_row",
+               :locals => {:project => @project, :pbi => pbi, :task_statuses => task_statuses} %>
+  <%- end -%>
+</table>
 
 <%- if User.current.allowed_to?(:add_issues, @project) and
        User.current.allowed_to?(:edit_sprint_board, @project) -%>

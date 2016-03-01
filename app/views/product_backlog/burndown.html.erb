@@ -10,6 +10,8 @@
   <%= stylesheet_link_tag "xcharts.min.css", :plugin => "scrum" %>
 <% end %>
 
+<%= render :partial => "burndown_head", :locals => {:count => @sprints_count, :sps => @story_points_per_sprint} %>
+
 <figure style="left-margin: auto; right-margin:auto; width: 90%; height: 500px;" id="burndown-chart" />
 
 <%= render :partial => "product_backlog/burndown", :formats => [:js], :locals => {:data => @data} %>
