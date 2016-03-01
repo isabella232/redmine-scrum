@@ -6,10 +6,10 @@ module Scrum
       base.class_eval do
 
         belongs_to :product_backlog, :class_name => "Sprint"
-        has_many :sprints, :dependent => :destroy, :order => "sprint_start_date ASC, name ASC",
-                 :conditions => {:is_product_backlog => false}
-        has_many :sprints_and_product_backlog, :class_name => "Sprint", :dependent => :destroy,
-                 :order => "sprint_start_date ASC, name ASC"
+        has_many :sprints, -> { where(:is_product_backlog => false).order("sprint_start_date ASC, name ASC") },
+                 :dependent => :destroy
+        has_many :sprints_and_product_backlog, -> { order("sprint_start_date ASC, name ASC") },
+                 :class_name => "Sprint", :dependent => :destroy
 
         def last_sprint
           sprints.sort{|a, b| a.sprint_end_date <=> b.sprint_end_date}.last

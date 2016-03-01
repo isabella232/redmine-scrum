@@ -6,7 +6,7 @@ module Scrum
       base.class_eval do
 
         belongs_to :sprint
-        has_many :pending_efforts, :order => "date ASC"
+        has_many :pending_efforts, -> { order("date ASC") }
 
         acts_as_list :scope => :sprint
 
@@ -78,15 +78,15 @@ module Scrum
         def doers
           users = []
           users << assigned_to unless assigned_to.nil?
-          time_entries = TimeEntry.all(:conditions => {:issue_id => id,
-                                                       :activity_id => Issue.doing_activities_ids})
+          time_entries = TimeEntry.where(:issue_id => id,
+                                         :activity_id => Issue.doing_activities_ids)
           users.concat(time_entries.collect{|t| t.user}).uniq.sort
         end
 
         def reviewers
           users = []
-          time_entries = TimeEntry.all(:conditions => {:issue_id => id,
-                                                       :activity_id => Issue.reviewing_activities_ids})
+          time_entries = TimeEntry.where(:issue_id => id,
+                                         :activity_id => Issue.reviewing_activities_ids)
           users.concat(time_entries.collect{|t| t.user}).uniq.sort
         end
 
@@ -136,7 +136,7 @@ module Scrum
 
         def pending_effort=(new_effort)
           if is_task? and id and new_effort
-            effort = PendingEffort.first(:conditions => {:issue_id => id, :date => Date.today})
+            effort = PendingEffort.where(:issue_id => id, :date => Date.today).first
             # Replace invalid float number separatos (i.e. 0,5) with valid separator (i.e. 0.5)
             new_effort.gsub!(",", ".")
             if effort.nil?
@@ -330,7 +330,7 @@ module Scrum
         @@activities = nil
         def self.activities
           unless @@activities
-            @@activities = Enumeration.all(:conditions => {:type => "TimeEntryActivity"})
+            @@activities = Enumeration.where(:type => "TimeEntryActivity")
           end
           @@activities
         end
@@ -346,7 +346,7 @@ module Scrum
         @@doing_activities_ids = nil
         def self.doing_activities_ids
           unless @@doing_activities_ids
-            reviewing_activities = Enumeration.all(:conditions => {:id => reviewing_activities_ids})
+            reviewing_activities = Enumeration.where(:id => reviewing_activities_ids)
             doing_activities = activities - reviewing_activities
             @@doing_activities_ids = doing_activities.collect{|a| a.id}
           end

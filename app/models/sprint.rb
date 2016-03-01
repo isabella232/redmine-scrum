@@ -11,14 +11,16 @@ class Sprint < ActiveRecord::Base
   belongs_to :project
   has_many :issues, :dependent => :destroy
   has_many :efforts, :class_name => "SprintEffort", :dependent => :destroy
+  scope :sorted, -> { order(fields_for_order_statement) }
+
+  include Redmine::SafeAttributes
+  safe_attributes :name, :description, :sprint_start_date, :sprint_end_date
+  attr_protected :id
 
   validates_presence_of :name
   validates_uniqueness_of :name, :scope => [:project_id]
   validates_length_of :name, :maximum => 60
-  validates_presence_of :name
-
   validates_presence_of :sprint_start_date
-
   validates_presence_of :sprint_end_date
   
   before_destroy :update_project_product_backlog
@@ -36,11 +38,11 @@ class Sprint < ActiveRecord::Base
                   :status_id => Scrum::Setting.pbi_status_ids}
     order = "position ASC"
     if options[:position_bellow]
-      first_issue = issues.first(:conditions => conditions, :order => order)
+      first_issue = issues.where(conditions).order(order).first
       first_position = first_issue ? first_issue.position : (options[:position_bellow] - 1)
       last_position = options[:position_bellow] - 1
     elsif options[:position_above]
-      last_issue = issues.last(:conditions => conditions, :order => order)
+      last_issue = issues.where(conditions).order(order).last
       first_position = options[:position_above] + 1
       last_position = last_issue ? last_issue.position : (options[:position_above] + 1)
     end
@@ -52,7 +54,7 @@ class Sprint < ActiveRecord::Base
       end
       conditions[:position] = first_position..last_position
     end
-    issues.all(:conditions => conditions, :order => order).select{|issue| issue.visible?}
+    issues.where(conditions).order(order).select{|issue| issue.visible?}
   end
 
   def story_points
@@ -64,15 +66,14 @@ class Sprint < ActiveRecord::Base
   end
 
   def tasks
-    issues.all(:conditions => {:tracker_id => Scrum::Setting.task_tracker_ids}).select{|issue| issue.visible?}
+    issues.where(:tracker_id => Scrum::Setting.task_tracker_ids).select{|issue| issue.visible?}
   end
 
   def estimated_hours
     sum = 0.0
     tasks.each do |task|
       if task.use_in_burndown?
-        pending_efforts = task.pending_efforts.find(:all, :conditions => ["date < ?", self.sprint_start_date])
-        pending_effort = pending_efforts.sort!{|a, b| b.date <=> a.date}.first
+        pending_effort = task.pending_efforts.where(["date < ?", self.sprint_start_date]).order("date ASC").first
         pending_effort = pending_effort.effort unless pending_effort.nil?
         if (!(pending_effort.nil?))
           sum += pending_effort
@@ -172,8 +173,6 @@ class Sprint < ActiveRecord::Base
      "#{table}.name",
      "#{table}.id"]
   end
-
-  scope :sorted, order(fields_for_order_statement)
 
 private
 

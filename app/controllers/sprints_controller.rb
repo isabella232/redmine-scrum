@@ -50,9 +50,10 @@ class SprintsController < ApplicationController
   def create
     raise "Product backlog is already set" if params[:create_product_backlog] and
                                               !(@project.product_backlog.nil?)
-    @sprint = Sprint.new(params[:sprint].merge(:user => User.current,
-                                               :project => @project,
-                                               :is_product_backlog => (!(params[:create_product_backlog].nil?))))
+    @sprint = Sprint.new(:user => User.current,
+                         :project => @project,
+                         :is_product_backlog => (!(params[:create_product_backlog].nil?)))
+    @sprint.safe_attributes = params[:sprint]
     if request.post? and @sprint.save
       if params[:create_product_backlog]
         @project.product_backlog = @sprint
@@ -109,10 +110,9 @@ class SprintsController < ApplicationController
       days.each_pair do |day, effort|
         day = day.to_i
         date = @sprint.sprint_start_date + day.to_i
-        sprint_effort = SprintEffort.find(:first,
-                                          :conditions => {:sprint_id => @sprint.id,
-                                                          :user_id => user_id,
-                                                          :date => date})
+        sprint_effort = SprintEffort.where(:sprint_id => @sprint.id,
+                                           :user_id => user_id,
+                                           :date => date).first
         if sprint_effort.nil?
           unless effort.blank?
             sprint_effort = SprintEffort.new(:sprint_id => @sprint.id,
@@ -139,7 +139,8 @@ class SprintsController < ApplicationController
     else
       render_error l(:error_no_sprints)
     end
-  rescue
+  rescue Exception => exception
+    puts("%%% exception: #{exception.inspect}")
     render_404
   end
 
@@ -148,14 +149,14 @@ class SprintsController < ApplicationController
     last_pending_effort = @sprint.estimated_hours
     last_day = nil
     ((@sprint.sprint_start_date)..(@sprint.sprint_end_date)).each do |date|
-      if @sprint.efforts.count(:conditions => ["date = ?", date]) > 0
-        efforts = @sprint.efforts.all(:conditions => ["date >= ?", date])
+      if @sprint.efforts.where(["date = ?", date]).count > 0
+        efforts = @sprint.efforts.where(["date >= ?", date])
         estimated_effort = efforts.collect{|effort| effort.effort}.compact.sum
         if date <= Date.today
           efforts = []
           @sprint.issues.each do |issue|
             if issue.use_in_burndown?
-              efforts << issue.pending_efforts.last(:conditions => ["date <= ?", date])
+              efforts << issue.pending_efforts.where(["date <= ?", date]).last
             end
           end
           pending_effort = efforts.compact.collect{|effort| effort.effort}.compact.sum
@@ -203,7 +204,7 @@ class SprintsController < ApplicationController
     @estimated_efforts_totals = {:days => {}, :total => 0.0}
     @done_efforts_totals = {:days => {}, :total => 0.0}
     ((@sprint.sprint_start_date)..(@sprint.sprint_end_date)).each do |date|
-      if @sprint.efforts.count(:conditions => ["date = ?", date]) > 0
+      if @sprint.efforts.where(["date = ?", date]).count > 0
         @days << {:date => date, :label => "#{I18n.l(date, :format => :scrum_day)} #{date.day}"}
         if User.current.allowed_to?(:view_sprint_stats_by_member, @project)
           estimated_effort_conditions = ["date = ?", date]
@@ -212,7 +213,7 @@ class SprintsController < ApplicationController
           estimated_effort_conditions = ["date = ? AND user_id = ?", date, User.current.id]
           done_effort_conditions = ["spent_on = ? AND user_id = ?", date, User.current.id]
         end
-        @sprint.efforts.all(:conditions => estimated_effort_conditions).each do |sprint_effort|
+        @sprint.efforts.where(estimated_effort_conditions).each do |sprint_effort|
           if sprint_effort.effort
             init_members_efforts(@members_efforts, sprint_effort.user)
             member_estimated_efforts_days = init_member_efforts_days(@members_efforts,
@@ -227,7 +228,7 @@ class SprintsController < ApplicationController
             @estimated_efforts_totals[:total] += sprint_effort.effort
           end
         end
-        @project.time_entries.all(:conditions => done_effort_conditions).each do |time_entry|
+        @project.time_entries.where(done_effort_conditions).each do |time_entry|
           if time_entry.hours
             init_members_efforts(@members_efforts,
                                  time_entry.user)

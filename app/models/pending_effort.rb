@@ -9,4 +9,8 @@ class PendingEffort < ActiveRecord::Base
 
   belongs_to :issue
 
+  include Redmine::SafeAttributes
+  safe_attributes :issue_id, :date, :effort
+  attr_protected :id
+
 end

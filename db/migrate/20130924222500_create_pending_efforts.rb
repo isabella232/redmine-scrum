@@ -18,10 +18,9 @@ class CreatePendingEfforts < ActiveRecord::Migration
 
     if !((custom_field_id = Setting.plugin_scrum[:pending_effort_custom_field]).nil?)
       Issue.all.each do |issue|
-        values = CustomValue.find(:all,
-                                  :conditions => {:customized_type => "Issue",
-                                                  :customized_id => issue.id,
-                                                  :custom_field_id => custom_field_id})
+        values = CustomValue.where(:customized_type => "Issue",
+                                   :customized_id => issue.id,
+                                   :custom_field_id => custom_field_id)
         if values.count == 1
           effort = PendingEffort.new(:issue_id => issue.id,
                                      :date => issue.updated_on,

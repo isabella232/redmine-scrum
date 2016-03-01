@@ -12,7 +12,7 @@ resources :projects do
   resources :sprints, :shallow => true do
     member do
       get :edit_effort
-      put :update_effort
+      post :update_effort
       get :burndown
       get :burndown_graph
       get :stats

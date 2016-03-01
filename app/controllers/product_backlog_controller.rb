@@ -51,7 +51,6 @@ class ProductBacklogController < ApplicationController
     @pbi.author = User.current
     @pbi.tracker = @project.trackers.find(params[:tracker_id])
     @pbi.sprint = @product_backlog
-
     respond_to do |format|
       format.html
       format.js
@@ -131,7 +130,7 @@ private
   end
 
   def check_issue_positions
-    check_issue_position(Issue.find_all_by_sprint_id_and_position(@project.product_backlog, nil))
+    check_issue_position(Issue.where(:sprint_id => @project.product_backlog, :position => nil))
   end
 
   def check_issue_position(issue)
@@ -141,7 +140,7 @@ private
         issue.save!
         issue.reload
       end
-    elsif issue.is_a?(Array)
+    elsif issue.respond_to?(:each)
       issue.each do |i|
         check_issue_position(i)
       end

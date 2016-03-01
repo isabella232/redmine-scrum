@@ -10,7 +10,7 @@ module Scrum
         end
 
         def self.pbi_trackers
-          Tracker.all(:conditions => {:id => pbi_trackers_ids})
+          Tracker.where(:id => pbi_trackers_ids)
         end
 
         def is_pbi?
@@ -22,7 +22,7 @@ module Scrum
         end
 
         def self.task_trackers
-          Tracker.all(:conditions => {:id => task_trackers_ids})
+          Tracker.where(:id => task_trackers_ids)
         end
 
         def is_task?
